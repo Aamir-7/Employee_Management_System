@@ -10,6 +10,8 @@ import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -25,7 +27,18 @@ public class LeaveService {
         this.jwtUtil = jwtUtil;
     }
 
-    public LeaveRequest applyLeave(Long employeeId, String reason, String description) {
+    public LeaveRequest applyLeave(Long employeeId,
+                                   String reason,
+                                   String description,
+                                   LocalDate startDate,
+                                   LocalDate endDate
+    ) {
+
+        if (endDate.isBefore(startDate)){
+            throw new RuntimeException("the end date cant start before start date");
+        }
+
+        int totalDays=(int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
         Employee emp=employeeRepo.findById(employeeId)
                 .orElseThrow(()->new RuntimeException("employee not found"));
@@ -35,6 +48,9 @@ public class LeaveService {
         leave.setManagerId(emp.getManager());
         leave.setReason(reason);
         leave.setDescription(description);
+        leave.setStartDate(startDate);
+        leave.setEndDate(endDate);
+        leave.setTotalDays(totalDays);
         leave.setStatus(LeaveStatus.PENDING);
         return leaveRepo.save(leave);
     }
@@ -82,7 +98,7 @@ public class LeaveService {
         }
 
         // deduct leave
-        emp.setLeaveBalance(emp.getLeaveBalance() - 1);
+        emp.setLeaveBalance(emp.getLeaveBalance() - leave.getTotalDays());
         employeeRepo.save(emp);
 
         // approve leave

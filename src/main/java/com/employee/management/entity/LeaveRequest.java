@@ -3,6 +3,8 @@ package com.employee.management.entity;
 import com.employee.management.enums.LeaveStatus;
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "leave_request")
 public class LeaveRequest {
@@ -16,8 +18,37 @@ public class LeaveRequest {
     private String reason;
     private String description;
 
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private int totalDays;
+
     @Enumerated(EnumType.STRING)
     private LeaveStatus status;
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public int getTotalDays() {
+        return totalDays;
+    }
+
+    public void setTotalDays(int totalDays) {
+        this.totalDays = totalDays;
+    }
+
 
     public LeaveRequest() {
     }

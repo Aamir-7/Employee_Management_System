@@ -5,6 +5,7 @@ import com.employee.management.enums.LeaveStatus;
 import com.employee.management.service.LeaveService;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +28,9 @@ public class LeaveController {
         return service.applyLeave(
                 id,
                 body.get("reason"),
-                body.get("description")
+                body.get("description"),
+                LocalDate.parse(body.get("startDate")),
+                LocalDate.parse(body.get("endDate"))
         );
     }
 
