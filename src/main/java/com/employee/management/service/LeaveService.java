@@ -92,7 +92,7 @@ public class LeaveService {
         Employee emp = employeeRepo.findById(leave.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        // leave balance check (IMPORTANT)
+        // leave balance check
         if (emp.getLeaveBalance() <= 0) {
             throw new RuntimeException("No leave balance available");
         }

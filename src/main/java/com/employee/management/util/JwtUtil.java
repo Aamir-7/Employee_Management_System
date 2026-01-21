@@ -72,4 +72,18 @@ public class JwtUtil {
             );
         }
     }
+
+    public void enforceAdminOrManager(String authHeader){
+        String token=authHeader.replace("Bearer ","").trim();
+        Claims claims=extractClaims(token);
+
+        String role=claims.get("role", String.class);
+
+        if (!"ADMIN".equals(role) && !"MANAGER".equals(role) ){
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "only admin and manager can perform this operation"
+            );
+        }
+    }
 }
