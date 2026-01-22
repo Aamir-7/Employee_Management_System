@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/leave")
@@ -19,14 +20,14 @@ public class LeaveController {
         this.service = service;
     }
 
-    //apply leave
-    @PostMapping("/employee/{id}")
+    // APPLY LEAVE
+    @PostMapping("/employee/{employeeId}")
     public LeaveRequest applyLeave(
-            @PathVariable Long id,
-            @RequestBody Map<String,String>body
-            ){
+            @PathVariable UUID employeeId,
+            @RequestBody Map<String, String> body
+    ) {
         return service.applyLeave(
-                id,
+                employeeId,
                 body.get("reason"),
                 body.get("description"),
                 LocalDate.parse(body.get("startDate")),
@@ -34,47 +35,39 @@ public class LeaveController {
         );
     }
 
-    //get leaves by status
+    // GET LEAVES BY STATUS
     @GetMapping
-    public List<LeaveRequest>getLeaves(
-            @RequestParam(required = false)LeaveStatus status
-            ){
-
-        if (status==null){
-            return service.getAllLeaves();
-        }
-
-        return service.getLeavesByStatus(status);
+    public List<LeaveRequest> getLeaves(
+            @RequestParam(required = false) LeaveStatus status
+    ) {
+        return status == null
+                ? service.getAllLeaves()
+                : service.getLeavesByStatus(status);
     }
 
-    //get pending leaves by manager
-    @GetMapping("/manager/{id}")
-    public List<LeaveRequest>pendingLeaves(@PathVariable Long id){
-        return service.getpendingLeaves(id);
+    // MANAGER → VIEW PENDING
+    @GetMapping("/manager/{managerId}")
+    public List<LeaveRequest> pendingLeaves(@PathVariable UUID managerId) {
+        return service.getPendingLeaves(managerId);
     }
 
-    //Approve
+    // APPROVE
     @PutMapping("/{leaveId}/approve")
     public LeaveRequest approveLeave(
-            @PathVariable Long leaveId,
+            @PathVariable UUID leaveId,
             @RequestHeader("Authorization") String authHeader
     ) {
         return service.approveLeave(leaveId, authHeader);
     }
 
-    //Reject
+    // REJECT
     @PutMapping("/{leaveId}/reject")
     public LeaveRequest rejectLeave(
-            @PathVariable Long leaveId,
+            @PathVariable UUID leaveId,
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody(required = false)Map<String,String>body
-    ){
-        String rejectReason=null;
-        if (body!=null){
-            rejectReason=body.get("description");
-
-        }
-        return service.rejectLeave(leaveId,authHeader,rejectReason);
+            @RequestBody(required = false) Map<String, String> body
+    ) {
+        String reason = body != null ? body.get("description") : null;
+        return service.rejectLeave(leaveId, authHeader, reason);
     }
 }
-

@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
+
     private final TaskService service;
     private final JwtUtil jwtUtil;
 
@@ -24,25 +26,18 @@ public class TaskController {
         this.jwtUtil = jwtUtil;
     }
 
-    //create task
     @PostMapping
     public TaskResponse createTask(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody Map<String, String> body
     ) {
-        // allow ADMIN or MANAGER
         jwtUtil.enforceAdminOrManager(authHeader);
-
-        // extract creator (manager/admin) username from JWT
-        String assignedBy = jwtUtil
-                .extractClaims(authHeader.replace("Bearer ", "").trim())
-                .getSubject();
 
         return service.createTask(
                 body.get("title"),
                 body.get("description"),
-                body.get("assignedTo"),
-                assignedBy,
+                UUID.fromString(body.get("assignedToId")),
+                authHeader,
                 Priority.valueOf(body.get("priority")),
                 body.get("notes"),
                 LocalDate.parse(body.get("assignDate")),
@@ -50,32 +45,26 @@ public class TaskController {
         );
     }
 
-
-    //Get all tasks will be update with query param later
     @GetMapping
-    public List<TaskResponse>getAllTasks(@RequestHeader("Authorization")String authHeader){
+    public List<TaskResponse> getAllTasks(
+            @RequestHeader("Authorization") String authHeader
+    ) {
         jwtUtil.enforceAdminOrManager(authHeader);
         return service.getAllTasks();
     }
 
-    //get employees tasks
     @GetMapping("/my")
-    public List<TaskResponse>getMyTasks(
-            @RequestHeader("Authorization")String authHeader,
-                            HttpServletRequest request){
-
-        String token=authHeader.replace("Bearer ","").trim();
-        Claims claims = jwtUtil.extractClaims(token);
-        String username=claims.getSubject();
-
-        return service.getMyTasks(username);
+    public List<TaskResponse> getMyTasks(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        return service.getMyTasks(authHeader);
     }
 
     @PatchMapping("/{taskId}/status")
     public TaskResponse updateStatus(
-            @PathVariable Long taskId,
-            @RequestBody Map<String,String>body
-    ){
+            @PathVariable UUID taskId,
+            @RequestBody Map<String, String> body
+    ) {
         return service.updateTaskStatus(
                 taskId,
                 TaskStatus.valueOf(body.get("status"))

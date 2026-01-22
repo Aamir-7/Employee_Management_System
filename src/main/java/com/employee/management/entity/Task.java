@@ -5,20 +5,24 @@ import com.employee.management.enums.TaskStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "task")
 public class Task {
+
     @Id
-    @GeneratedValue
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private LocalDate assignDate;
     private String project;
     private String title;
     private String description;
+
     @Enumerated(EnumType.STRING)
     private Priority priority;
+
     private String notes;
 
     @ManyToOne
@@ -26,126 +30,43 @@ public class Task {
     private Employee assignedTo;
 
     @ManyToOne
-    @JoinColumn(name = "assigned_by",nullable = false)
+    @JoinColumn(name = "assigned_by", nullable = false)
     private Employee assignedBy;
 
     @Enumerated(EnumType.STRING)
-    private TaskStatus status;
+    private TaskStatus status = TaskStatus.TODO;
 
-    //date when was the task assigned
-    // project related to which project
-    // priority high medium low
-    // notes some tips or notes or some important something
+    private boolean deleted = false;
 
-    private boolean deleted=false;
+    public UUID getId() { return id; }
 
-    public Task() {
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public Task(String title,
-                String description,
-                Employee assignedTo,
-                Employee assignedBy,
-                TaskStatus status,
-                boolean deleted,
-                LocalDate assignDate,
-                String project,
-                String notes,
-                Priority priority) {
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-        this.title = title;
-        this.description = description;
-        this.assignedTo = assignedTo;
-        this.assignedBy = assignedBy;
-        this.status = status;
-        this.deleted = deleted;
-        this.assignDate = assignDate;
-        this.project = project;
-        this.notes = notes;
-        this.priority = priority;
-    }
+    public Employee getAssignedTo() { return assignedTo; }
+    public void setAssignedTo(Employee assignedTo) { this.assignedTo = assignedTo; }
 
-    public Long getId() {
-        return id;
-    }
+    public Employee getAssignedBy() { return assignedBy; }
+    public void setAssignedBy(Employee assignedBy) { this.assignedBy = assignedBy; }
 
-    public String getTitle() {
-        return title;
-    }
+    public TaskStatus getStatus() { return status; }
+    public void setStatus(TaskStatus status) { this.status = status; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
-    public String getDescription() {
-        return description;
-    }
+    public LocalDate getAssignDate() { return assignDate; }
+    public void setAssignDate(LocalDate assignDate) { this.assignDate = assignDate; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getProject() { return project; }
+    public void setProject(String project) { this.project = project; }
 
-    public Employee getAssignedTo() {
-        return assignedTo;
-    }
+    public Priority getPriority() { return priority; }
+    public void setPriority(Priority priority) { this.priority = priority; }
 
-    public void setAssignedTo(Employee assignedTo) {
-        this.assignedTo = assignedTo;
-    }
-
-    public Employee getAssignedBy() {
-        return assignedBy;
-    }
-
-    public void setAssignedBy(Employee assignedBy) {
-        this.assignedBy = assignedBy;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    public LocalDate getAssignDate() {
-        return assignDate;
-    }
-
-    public void setAssignDate(LocalDate assignDate) {
-        this.assignDate = assignDate;
-    }
-
-    public String getProject() {
-        return project;
-    }
-
-    public void setProject(String project) {
-        this.project = project;
-    }
-
-    public Priority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Priority priority) {
-        this.priority = priority;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 }

@@ -4,97 +4,64 @@ import com.employee.management.enums.LeaveStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "leave_request")
 public class LeaveRequest {
-    @Id
-    @GeneratedValue
-    private Long id;
 
-    private Long employeeId;
-    private Long managerId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    // who applied
+    @Column(nullable = false)
+    private UUID employeeId;
+
+    // manager who approves
+    @Column(nullable = false)
+    private UUID managerId;
 
     private String reason;
     private String description;
 
+    @Column(nullable = false)
     private LocalDate startDate;
+
+    @Column(nullable = false)
     private LocalDate endDate;
+
     private int totalDays;
 
     @Enumerated(EnumType.STRING)
-    private LeaveStatus status;
+    @Column(nullable = false)
+    private LeaveStatus status = LeaveStatus.PENDING;
 
-    public LocalDate getStartDate() {
-        return startDate;
-    }
+    /* ===== getters & setters ===== */
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
+    public UUID getId() { return id; }
 
-    public LocalDate getEndDate() {
-        return endDate;
-    }
+    public UUID getEmployeeId() { return employeeId; }
+    public void setEmployeeId(UUID employeeId) { this.employeeId = employeeId; }
 
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
+    public UUID getManagerId() { return managerId; }
+    public void setManagerId(UUID managerId) { this.managerId = managerId; }
 
-    public int getTotalDays() {
-        return totalDays;
-    }
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
 
-    public void setTotalDays(int totalDays) {
-        this.totalDays = totalDays;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
 
-    public LeaveRequest() {
-    }
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 
-    public Long getEmployeeId() {
-        return employeeId;
-    }
+    public int getTotalDays() { return totalDays; }
+    public void setTotalDays(int totalDays) { this.totalDays = totalDays; }
 
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-
-    public Long getManagerId() {
-        return managerId;
-    }
-
-    public void setManagerId(Long managerId) {
-        this.managerId = managerId;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LeaveStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(LeaveStatus status) {
-        this.status = status;
-    }
+    public LeaveStatus getStatus() { return status; }
+    public void setStatus(LeaveStatus status) { this.status = status; }
 }

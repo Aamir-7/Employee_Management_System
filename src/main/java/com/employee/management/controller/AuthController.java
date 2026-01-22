@@ -1,10 +1,7 @@
 package com.employee.management.controller;
 
 import com.employee.management.service.AuthService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -19,12 +16,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String,String>login(@RequestBody Map<String,String>req){
-       String token=authService.login(
-               req.get("username"),
-               req.get("password")
-       );
-       return Map.of("token",token);
+    public Map<String, String> login(@RequestBody Map<String, String> req) {
 
+        String workEmail = req.get("workEmail");
+        String password = req.get("password");
+
+        if (workEmail == null || password == null) {
+            throw new RuntimeException("workEmail and password are required");
+        }
+
+        String token = authService.login(workEmail, password);
+        return Map.of("token", token);
     }
 }
+
