@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthService {
+
     private final EmployeeRepo repo;
     private final JwtUtil jwtUtil;
 
@@ -15,14 +16,20 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public String login(String username, String password) {
-        Employee emp=repo.findByUsernameAndDeletedFalse(username)
-                .orElseThrow(()->new RuntimeException("Employee not found"));
+    public String login(String workEmail, String password) {
 
-        if (!emp.getPassword().equals(password)){
-            throw new RuntimeException("invalid credentials");
+        Employee emp = repo.findByWorkEmailAndDeletedFalse(workEmail)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if (emp.getPassword() == null || !emp.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid credentials");
         }
 
-        return jwtUtil.generateToken(emp.getUsername(),emp.getRole().name());
+        // ✅ UUID + Role (matches JwtUtil exactly)
+        return jwtUtil.generateToken(
+                emp.getEmployeeId(),
+                emp.getRole()
+        );
     }
 }
+

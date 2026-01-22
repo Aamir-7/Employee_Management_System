@@ -5,25 +5,35 @@ import com.employee.management.repository.EmployeeRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class EmployeeService {
+
     private final EmployeeRepo repo;
 
     public EmployeeService(EmployeeRepo repo) {
         this.repo = repo;
     }
 
+    /* ======================
+       GET ALL (NON-DELETED)
+       ====================== */
     public List<Employee> getAll() {
         return repo.findByDeletedFalse();
     }
 
-    public Employee getById(Long id) {
-        return repo.findByIdAndDeletedFalse(id)
-                .orElseThrow(()->new RuntimeException("Employee not found"));
+    /* ======================
+       GET BY UUID
+       ====================== */
+    public Employee getById(UUID employeeId) {
+        return repo.findByEmployeeIdAndDeletedFalse(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
     }
 
-
+    /* ======================
+       CREATE
+       ====================== */
     public Employee create(Employee employee) {
         if (employee.getLeaveBalance() == null) {
             employee.setLeaveBalance(20);
@@ -31,103 +41,157 @@ public class EmployeeService {
         return repo.save(employee);
     }
 
-    public Employee updateEmployee(Long id, Employee updatedEmployee) {
-        Employee existingEmp = repo.findByIdAndDeletedFalse(id)
+    /* ======================
+       FULL UPDATE (PUT)
+       ====================== */
+    public Employee updateEmployee(UUID employeeId, Employee updated) {
+
+        Employee existing = repo.findByEmployeeIdAndDeletedFalse(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        existingEmp.setUsername(updatedEmployee.getUsername());
-        existingEmp.setEmail(updatedEmployee.getEmail());
-        existingEmp.setPassword(updatedEmployee.getPassword());
-        existingEmp.setRole(updatedEmployee.getRole());
+        existing.setFirstName(updated.getFirstName());
+        existing.setMiddleName(updated.getMiddleName());
+        existing.setLastName(updated.getLastName());
+        existing.setRole(updated.getRole());
 
-        existingEmp.setMobileNum(updatedEmployee.getMobileNum());
-        existingEmp.setEducation(updatedEmployee.getEducation());
-        existingEmp.setJobTitle(updatedEmployee.getJobTitle());
-        existingEmp.setGender(updatedEmployee.getGender());
-        existingEmp.setDepartment(updatedEmployee.getDepartment());
-        existingEmp.setWorkMode(updatedEmployee.getWorkMode());
+        existing.setWorkEmail(updated.getWorkEmail());
+        existing.setPassword(updated.getPassword());
+        existing.setMicrosoftId(updated.getMicrosoftId());
 
-        existingEmp.setDateOfBirth(updatedEmployee.getDateOfBirth());
-        existingEmp.setAddress(updatedEmployee.getAddress());
-        existingEmp.setSalary(updatedEmployee.getSalary());
-        existingEmp.setPerformance(updatedEmployee.getPerformance());
-        existingEmp.setInTime(updatedEmployee.getInTime());
-        existingEmp.setOutTime(updatedEmployee.getOutTime());
-        existingEmp.setWorkingHours(updatedEmployee.getWorkingHours());
-        existingEmp.setWorkStatus(updatedEmployee.getWorkStatus());
-        existingEmp.setTask(updatedEmployee.getTask());
+        existing.setMobileNumber(updated.getMobileNumber());
+        existing.setAlternatePhoneNumber(updated.getAlternatePhoneNumber());
 
-        return repo.save(existingEmp);
+        existing.setDateOfBirth(updated.getDateOfBirth());
+        existing.setGender(updated.getGender());
+        existing.setNationality(updated.getNationality());
+        existing.setMaritalStatus(updated.getMaritalStatus());
+        existing.setBloodGroup(updated.getBloodGroup());
 
+        existing.setCurrentAddress(updated.getCurrentAddress());
+        existing.setPermanentAddress(updated.getPermanentAddress());
+
+        existing.setEmergencyContactName(updated.getEmergencyContactName());
+        existing.setEmergencyContactNumber(updated.getEmergencyContactNumber());
+
+        existing.setJobTitle(updated.getJobTitle());
+        existing.setDepartment(updated.getDepartment());
+        existing.setWorkMode(updated.getWorkMode());
+        existing.setEmploymentType(updated.getEmploymentType());
+        existing.setEmployeeStatus(updated.getEmployeeStatus());
+        existing.setDateOfJoining(updated.getDateOfJoining());
+        existing.setOfficeLocation(updated.getOfficeLocation());
+
+        existing.setManagerId(updated.getManagerId());
+
+        existing.setShiftTiming(updated.getShiftTiming());
+        existing.setPerformanceRating(updated.getPerformanceRating());
+        existing.setAppraisalHistory(updated.getAppraisalHistory());
+
+        existing.setSkills(updated.getSkills());
+        existing.setEducation(updated.getEducation());
+        existing.setProjects(updated.getProjects());
+        existing.setLanguagesKnown(updated.getLanguagesKnown());
+
+        existing.setSalary(updated.getSalary());
+        existing.setBonusAmount(updated.getBonusAmount());
+
+        existing.setLeaveBalance(updated.getLeaveBalance());
+
+        existing.setPhotoPath(updated.getPhotoPath());
+        existing.setResumePath(updated.getResumePath());
+
+        existing.setAadhaarNumber(updated.getAadhaarNumber());
+        existing.setActive(updated.getActive());
+
+        return repo.save(existing);
     }
 
-    public Employee pathcEmployee(Long id, Employee updatedEmployee) {
-        Employee existingEmp = repo.findByIdAndDeletedFalse(id)
+    /* ======================
+       PARTIAL UPDATE (PATCH)
+       ====================== */
+    public Employee patchEmployee(UUID employeeId, Employee updated) {
+
+        Employee existing = repo.findByEmployeeIdAndDeletedFalse(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        if (updatedEmployee.getUsername() != null)
-            existingEmp.setUsername(updatedEmployee.getUsername());
+        if (updated.getFirstName() != null)
+            existing.setFirstName(updated.getFirstName());
 
-        if (updatedEmployee.getEmail() != null)
-            existingEmp.setEmail(updatedEmployee.getEmail());
+        if (updated.getMiddleName() != null)
+            existing.setMiddleName(updated.getMiddleName());
 
-        if (updatedEmployee.getPassword() != null)
-            existingEmp.setPassword(updatedEmployee.getPassword());
+        if (updated.getLastName() != null)
+            existing.setLastName(updated.getLastName());
 
-        if (updatedEmployee.getRole() != null)
-            existingEmp.setRole(updatedEmployee.getRole());
+        if (updated.getRole() != null)
+            existing.setRole(updated.getRole());
 
-        if (updatedEmployee.getMobileNum() != null)
-            existingEmp.setMobileNum(updatedEmployee.getMobileNum());
+        if (updated.getWorkEmail() != null)
+            existing.setWorkEmail(updated.getWorkEmail());
 
-        if (updatedEmployee.getEducation() != null)
-            existingEmp.setEducation(updatedEmployee.getEducation());
+        if (updated.getPassword() != null)
+            existing.setPassword(updated.getPassword());
 
-        if (updatedEmployee.getJobTitle() != null)
-            existingEmp.setJobTitle(updatedEmployee.getJobTitle());
+        if (updated.getMicrosoftId() != null)
+            existing.setMicrosoftId(updated.getMicrosoftId());
 
-        if (updatedEmployee.getGender() != null)
-            existingEmp.setGender(updatedEmployee.getGender());
+        if (updated.getMobileNumber() != null)
+            existing.setMobileNumber(updated.getMobileNumber());
 
-        if (updatedEmployee.getDepartment() != null)
-            existingEmp.setDepartment(updatedEmployee.getDepartment());
+        if (updated.getAlternatePhoneNumber() != null)
+            existing.setAlternatePhoneNumber(updated.getAlternatePhoneNumber());
 
-        if (updatedEmployee.getWorkMode() != null)
-            existingEmp.setWorkMode(updatedEmployee.getWorkMode());
+        if (updated.getGender() != null)
+            existing.setGender(updated.getGender());
 
-        if (updatedEmployee.getDateOfBirth() != null)
-            existingEmp.setDateOfBirth(updatedEmployee.getDateOfBirth());
+        if (updated.getNationality() != null)
+            existing.setNationality(updated.getNationality());
 
-        if (updatedEmployee.getAddress() != null)
-            existingEmp.setAddress(updatedEmployee.getAddress());
+        if (updated.getMaritalStatus() != null)
+            existing.setMaritalStatus(updated.getMaritalStatus());
 
-        if (updatedEmployee.getSalary() != null)
-            existingEmp.setSalary(updatedEmployee.getSalary());
+        if (updated.getBloodGroup() != null)
+            existing.setBloodGroup(updated.getBloodGroup());
 
-        if (updatedEmployee.getPerformance() != null)
-            existingEmp.setPerformance(updatedEmployee.getPerformance());
+        if (updated.getCurrentAddress() != null)
+            existing.setCurrentAddress(updated.getCurrentAddress());
 
-        if (updatedEmployee.getInTime() != null)
-            existingEmp.setInTime(updatedEmployee.getInTime());
+        if (updated.getPermanentAddress() != null)
+            existing.setPermanentAddress(updated.getPermanentAddress());
 
-        if (updatedEmployee.getOutTime() != null)
-            existingEmp.setOutTime(updatedEmployee.getOutTime());
+        if (updated.getJobTitle() != null)
+            existing.setJobTitle(updated.getJobTitle());
 
-        if (updatedEmployee.getWorkingHours() != null)
-            existingEmp.setWorkingHours(updatedEmployee.getWorkingHours());
+        if (updated.getDepartment() != null)
+            existing.setDepartment(updated.getDepartment());
 
-        if (updatedEmployee.getWorkStatus() != null)
-            existingEmp.setWorkStatus(updatedEmployee.getWorkStatus());
+        if (updated.getWorkMode() != null)
+            existing.setWorkMode(updated.getWorkMode());
 
-        if (updatedEmployee.getTask() != null)
-            existingEmp.setTask(updatedEmployee.getTask());
+        if (updated.getEmploymentType() != null)
+            existing.setEmploymentType(updated.getEmploymentType());
 
-        return repo.save(existingEmp);
+        if (updated.getEmployeeStatus() != null)
+            existing.setEmployeeStatus(updated.getEmployeeStatus());
+
+        if (updated.getOfficeLocation() != null)
+            existing.setOfficeLocation(updated.getOfficeLocation());
+
+        if (updated.getManagerId() != null)
+            existing.setManagerId(updated.getManagerId());
+
+        if (updated.getLeaveBalance() != null)
+            existing.setLeaveBalance(updated.getLeaveBalance());
+
+        return repo.save(existing);
     }
 
-    public void deleteById(Long id) {
-        Employee emp=repo.findByIdAndDeletedFalse(id)
-                .orElseThrow(()->new RuntimeException("not found"));
+    /* ======================
+       SOFT DELETE
+       ====================== */
+    public void deleteById(UUID employeeId) {
+        Employee emp = repo.findByEmployeeIdAndDeletedFalse(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
         emp.setDeleted(true);
         repo.save(emp);
     }

@@ -10,7 +10,10 @@ import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class LeaveService {
@@ -19,112 +22,128 @@ public class LeaveService {
     private final LeaveRequestRepo leaveRepo;
     private final JwtUtil jwtUtil;
 
-    public LeaveService(EmployeeRepo employeeRepo, LeaveRequestRepo leaveRepo, JwtUtil jwtUtil) {
+    public LeaveService(EmployeeRepo employeeRepo,
+                        LeaveRequestRepo leaveRepo,
+                        JwtUtil jwtUtil) {
         this.employeeRepo = employeeRepo;
         this.leaveRepo = leaveRepo;
         this.jwtUtil = jwtUtil;
     }
 
-    public LeaveRequest applyLeave(Long employeeId, String reason, String description) {
+    /* ======================
+       APPLY LEAVE
+       ====================== */
+    public LeaveRequest applyLeave(
+            UUID employeeId,
+            String reason,
+            String description,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
 
-        Employee emp=employeeRepo.findById(employeeId)
-                .orElseThrow(()->new RuntimeException("employee not found"));
+        if (endDate.isBefore(startDate)) {
+            throw new RuntimeException("End date cannot be before start date");
+        }
 
-        LeaveRequest leave=new LeaveRequest();
+        int totalDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
+
+        Employee emp = employeeRepo
+                .findByEmployeeIdAndDeletedFalse(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        LeaveRequest leave = new LeaveRequest();
         leave.setEmployeeId(employeeId);
-        leave.setManagerId(emp.getManager());
+        leave.setManagerId(emp.getManagerId());
         leave.setReason(reason);
         leave.setDescription(description);
+        leave.setStartDate(startDate);
+        leave.setEndDate(endDate);
+        leave.setTotalDays(totalDays);
         leave.setStatus(LeaveStatus.PENDING);
+
         return leaveRepo.save(leave);
     }
 
-    public List<LeaveRequest> getpendingLeaves(Long managerId) {
-        return leaveRepo.findByManagerIdAndStatus(managerId,LeaveStatus.PENDING);
-
+    /* ======================
+       MANAGER → VIEW PENDING
+       ====================== */
+    public List<LeaveRequest> getPendingLeaves(UUID managerId) {
+        return leaveRepo.findByManagerIdAndStatus(managerId, LeaveStatus.PENDING);
     }
+
+    /* ======================
+       APPROVE LEAVE
+       ====================== */
     @Transactional
-    public LeaveRequest approveLeave(Long leaveId, String authHeader) {
+    public LeaveRequest approveLeave(UUID leaveId, String authHeader) {
 
-        // extract token
-        String token = authHeader.replace("Bearer ", "").trim();
-        Claims claims = jwtUtil.extractClaims(token);
+        Claims claims = jwtUtil.extractClaims(
+                authHeader.replace("Bearer ", "").trim()
+        );
 
-        String approverUsername = claims.getSubject();
-        String role = claims.get("role", String.class);
-        boolean isAdmin = "ADMIN".equals(role);
+        UUID approverId = UUID.fromString(claims.getSubject());
+        boolean isAdmin = "ADMIN".equals(claims.get("role", String.class));
 
-        // fetch leave
         LeaveRequest leave = leaveRepo.findById(leaveId)
-                .orElseThrow(() -> new RuntimeException("Leave request not found"));
+                .orElseThrow(() -> new RuntimeException("Leave not found"));
 
-        // must be pending
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new RuntimeException("Leave already processed");
         }
 
-        // fetch approver
-        Employee approver = employeeRepo.findByUsername(approverUsername)
-                .orElseThrow(() -> new RuntimeException("Approver not found"));
-
-        // authorization: manager of employee OR admin
-        if (!isAdmin && !leave.getManagerId().equals(approver.getId())) {
-            throw new RuntimeException("Not authorized to approve this leave");
+        if (!isAdmin && !leave.getManagerId().equals(approverId)) {
+            throw new RuntimeException("Not authorized to approve");
         }
 
-        // fetch employee
-        Employee emp = employeeRepo.findById(leave.getEmployeeId())
+        Employee emp = employeeRepo
+                .findByEmployeeIdAndDeletedFalse(leave.getEmployeeId())
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        // leave balance check (IMPORTANT)
-        if (emp.getLeaveBalance() <= 0) {
-            throw new RuntimeException("No leave balance available");
+        if (emp.getLeaveBalance() < leave.getTotalDays()) {
+            throw new RuntimeException("Insufficient leave balance");
         }
 
-        // deduct leave
-        emp.setLeaveBalance(emp.getLeaveBalance() - 1);
+        emp.setLeaveBalance(emp.getLeaveBalance() - leave.getTotalDays());
         employeeRepo.save(emp);
 
-        // approve leave
         leave.setStatus(LeaveStatus.APPROVED);
         return leaveRepo.save(leave);
     }
 
+    /* ======================
+       REJECT LEAVE
+       ====================== */
     @Transactional
-    public LeaveRequest rejectLeave(Long leaveId, String authHeader, String rejectReason) {
+    public LeaveRequest rejectLeave(UUID leaveId,
+                                    String authHeader,
+                                    String rejectReason) {
 
-        String token=authHeader.replace("Bearer ","").trim();
-        Claims claims=jwtUtil.extractClaims(token);
+        Claims claims = jwtUtil.extractClaims(
+                authHeader.replace("Bearer ", "").trim()
+        );
 
-        String approverUsername=claims.getSubject();
-        String role=claims.get("role", String.class);
-        boolean isAdmin="ADMIN".equals(role);
+        UUID approverId = UUID.fromString(claims.getSubject());
+        boolean isAdmin = "ADMIN".equals(claims.get("role", String.class));
 
-        //fetch leave
-        LeaveRequest leave=leaveRepo.findById(leaveId)
-                .orElseThrow(()->new RuntimeException("leave not found"));
+        LeaveRequest leave = leaveRepo.findById(leaveId)
+                .orElseThrow(() -> new RuntimeException("Leave not found"));
 
-        //check pending
-        if (leave.getStatus()!=LeaveStatus.PENDING){
-            throw new RuntimeException("leave already processed");
+        if (leave.getStatus() != LeaveStatus.PENDING) {
+            throw new RuntimeException("Leave already processed");
         }
 
-        //fetch approver
-        Employee approver=employeeRepo.findByUsername(approverUsername)
-                .orElseThrow(()->new RuntimeException("approver not found"));
-
-        //check for admin or manager
-        if (!isAdmin && !leave.getManagerId().equals(approver.getId())){
-            throw new RuntimeException("approver not authorized to process the request");
+        if (!isAdmin && !leave.getManagerId().equals(approverId)) {
+            throw new RuntimeException("Not authorized");
         }
-        if (rejectReason!=null && !rejectReason.isBlank()){
+
+        if (rejectReason != null && !rejectReason.isBlank()) {
             leave.setDescription(rejectReason);
         }
+
         leave.setStatus(LeaveStatus.REJECTED);
         return leaveRepo.save(leave);
     }
 
-    //get all leaves
     public List<LeaveRequest> getAllLeaves() {
         return leaveRepo.findAll();
     }

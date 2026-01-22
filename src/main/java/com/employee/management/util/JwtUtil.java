@@ -13,63 +13,110 @@ import org.springframework.web.server.ResponseStatusException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtil {
-    private static final String SECRET=
+
+    private static final String SECRET =
             "this-is-a-very-strong-secret-key-32bytes";
 
-    private final Key key= Keys.hmacShaKeyFor(
+    private final Key key = Keys.hmacShaKeyFor(
             SECRET.getBytes(StandardCharsets.UTF_8)
     );
 
-    public String generateToken(String username, String role) {
+    /* ======================
+       TOKEN CREATION
+       ====================== */
+    public String generateToken(UUID employeeId, Role role) {
 
         return Jwts.builder()
-                .setSubject(username)
-                .claim("role",role)
+                .setSubject(employeeId.toString())   // UUID stored as String
+                .claim("role", role.name())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis()+60*60*1000))
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + 60 * 60 * 1000)
+                )
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-    public Claims extractClaims(String token){
+
+    /* ======================
+       CLAIM EXTRACTION
+       ====================== */
+    public Claims extractClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
-    public Boolean isTokenValid(String token){
+
+    /* ======================
+       TOKEN VALIDATION
+       ====================== */
+    public boolean isTokenValid(String token) {
         try {
-                extractClaims(token);
-                return true;
-        }catch (JwtException e){
+            extractClaims(token);
+            return true;
+        } catch (JwtException e) {
             return false;
         }
     }
-    public void enforceAdmin(String authHeader){
-        if (authHeader==null || !authHeader.startsWith("Bearer")){
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "missing or invalid header"
-            );
-        }
-        String token=authHeader.replace("Bearer ","").trim();
-        if (!isTokenValid(token)){
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "invalid or expired token"
-            );
-        }
-        Claims claims=extractClaims(token);
-        Role role=Role.valueOf(claims.get("role",String.class));
 
-        if(role!=Role.ADMIN){
+    /* ======================
+       ADMIN ONLY
+       ====================== */
+    public void enforceAdmin(String authHeader) {
+
+        Claims claims = validateAndGetClaims(authHeader);
+        Role role = Role.valueOf(claims.get("role", String.class));
+
+        if (role != Role.ADMIN) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "only admins can perform this operation"
+                    "Only ADMIN can perform this operation"
             );
         }
+    }
+
+    /* ======================
+       ADMIN OR MANAGER
+       ====================== */
+    public void enforceAdminOrManager(String authHeader) {
+
+        Claims claims = validateAndGetClaims(authHeader);
+        Role role = Role.valueOf(claims.get("role", String.class));
+
+        if (role != Role.ADMIN && role != Role.MANAGER) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only ADMIN or MANAGER can perform this operation"
+            );
+        }
+    }
+
+    /* ======================
+       COMMON VALIDATION
+       ====================== */
+    private Claims validateAndGetClaims(String authHeader) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Missing or invalid Authorization header"
+            );
+        }
+
+        String token = authHeader.replace("Bearer ", "").trim();
+
+        if (!isTokenValid(token)) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid or expired token"
+            );
+        }
+
+        return extractClaims(token);
     }
 }

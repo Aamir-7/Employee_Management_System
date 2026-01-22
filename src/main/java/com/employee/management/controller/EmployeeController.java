@@ -6,10 +6,12 @@ import com.employee.management.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/employees")
 public class EmployeeController {
+
     private final EmployeeService service;
     private final JwtUtil jwtUtil;
 
@@ -18,52 +20,58 @@ public class EmployeeController {
         this.jwtUtil = jwtUtil;
     }
 
-    //public
+    // PUBLIC → get all employees
     @GetMapping
-    public List<Employee>getAll(){
+    public List<Employee> getAll() {
         return service.getAll();
     }
 
-    @GetMapping("/{id}")
-    public Employee getById(@PathVariable Long id){
-        return service.getById(id);
+    // PUBLIC → get employee by UUID
+    @GetMapping("/{employeeId}")
+    public Employee getById(@PathVariable UUID employeeId) {
+        return service.getById(employeeId);
     }
 
-    //protected
+    // ADMIN → create employee
     @PostMapping
     public Employee create(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody Employee employee){
+            @RequestBody Employee employee
+    ) {
         jwtUtil.enforceAdmin(authHeader);
         return service.create(employee);
     }
 
-    @PutMapping("/{id}")
+    // ADMIN → update employee
+    @PutMapping("/{employeeId}")
     public Employee updateEmployee(
-            @PathVariable Long id,
+            @PathVariable UUID employeeId,
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody Employee employee){
+            @RequestBody Employee employee
+    ) {
         jwtUtil.enforceAdmin(authHeader);
-        return service.updateEmployee(id,employee);
-
+        return service.updateEmployee(employeeId, employee);
     }
 
-    @PatchMapping("/{id}")
+    // ADMIN → partial update
+    @PatchMapping("/{employeeId}")
     public Employee patchEmployee(
-            @PathVariable Long id,
+            @PathVariable UUID employeeId,
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody Employee employee){
+            @RequestBody Employee employee
+    ) {
         jwtUtil.enforceAdmin(authHeader);
-        return service.pathcEmployee(id,employee);
+        return service.patchEmployee(employeeId, employee);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteById(
-            @PathVariable Long id,
+    // ADMIN → soft delete
+    @DeleteMapping("/{employeeId}")
+    public String deleteById(
+            @PathVariable UUID employeeId,
             @RequestHeader("Authorization") String authHeader
     ) {
         jwtUtil.enforceAdmin(authHeader);
-        service.deleteById(id);
+        service.deleteById(employeeId);
+        return "Deleted Successfully";
     }
-
 }
