@@ -97,6 +97,26 @@ public class JwtUtil {
     }
 
     /* ======================
+       ADMIN OR MANAGER OR Employee itself
+       ====================== */
+    public void enforceAdminOrSelf(String authHeader, UUID employeeId) {
+
+        Claims claims = extractClaimsFromHeader(authHeader);
+
+        UUID tokenEmployeeId = UUID.fromString(claims.getSubject());
+        Role role = Role.valueOf(claims.get("role", String.class));
+
+        if (role == Role.ADMIN) {
+            return; // admin allowed
+        }
+
+        if (!tokenEmployeeId.equals(employeeId)) {
+            throw new RuntimeException("Access denied");
+        }
+    }
+
+
+    /* ======================
        COMMON VALIDATION
        ====================== */
     private Claims validateAndGetClaims(String authHeader) {
@@ -107,6 +127,8 @@ public class JwtUtil {
                     "Missing or invalid Authorization header"
             );
         }
+
+
 
         String token = authHeader.replace("Bearer ", "").trim();
 
@@ -119,4 +141,15 @@ public class JwtUtil {
 
         return extractClaims(token);
     }
+
+    private Claims extractClaimsFromHeader(String authHeader) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Missing or invalid Authorization header");
+        }
+
+        String token = authHeader.substring(7).trim(); // remove "Bearer "
+        return extractClaims(token);
+    }
+
 }

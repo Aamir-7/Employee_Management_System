@@ -185,7 +185,6 @@ public class EmployeeService {
 
         return repo.save(existing);
     }
-
     /* ======================
        SOFT DELETE
        ====================== */

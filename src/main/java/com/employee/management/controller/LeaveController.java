@@ -51,6 +51,12 @@ public class LeaveController {
         return service.getPendingLeaves(managerId);
     }
 
+    //employee cancel leave
+    @PutMapping("/{leaveId}/cancel")
+    public LeaveRequest cancelLeave(@PathVariable UUID leaveId){
+        return service.cancelLeave(leaveId);
+    }
+
     // APPROVE
     @PutMapping("/{leaveId}/approve")
     public LeaveRequest approveLeave(
@@ -58,6 +64,15 @@ public class LeaveController {
             @RequestHeader("Authorization") String authHeader
     ) {
         return service.approveLeave(leaveId, authHeader);
+    }
+
+    //deduct leave
+    @PutMapping("/{leaveId}/deduct")
+    public String deductLeave(
+            @PathVariable UUID leaveId,
+            @RequestHeader("Authorization") String authHeader
+    ){
+      return service.deductLeave(leaveId,authHeader);
     }
 
     // REJECT

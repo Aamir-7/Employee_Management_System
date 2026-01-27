@@ -26,11 +26,12 @@ public class TaskController {
         this.jwtUtil = jwtUtil;
     }
 
+    //Create tasks
     @PostMapping
     public TaskResponse createTask(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody Map<String, String> body
-    ) {
+    ){
         jwtUtil.enforceAdminOrManager(authHeader);
 
         return service.createTask(
@@ -45,6 +46,7 @@ public class TaskController {
         );
     }
 
+    //Get all tasks
     @GetMapping
     public List<TaskResponse> getAllTasks(
             @RequestHeader("Authorization") String authHeader
@@ -53,6 +55,7 @@ public class TaskController {
         return service.getAllTasks();
     }
 
+    //get all employees tasks
     @GetMapping("/my")
     public List<TaskResponse> getMyTasks(
             @RequestHeader("Authorization") String authHeader
@@ -60,6 +63,7 @@ public class TaskController {
         return service.getMyTasks(authHeader);
     }
 
+    //update tasks
     @PatchMapping("/{taskId}/status")
     public TaskResponse updateStatus(
             @PathVariable UUID taskId,
