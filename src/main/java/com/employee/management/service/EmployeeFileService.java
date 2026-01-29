@@ -41,7 +41,22 @@ public class EmployeeFileService {
         return "Photo uploaded successfully";
     }
 
+    public String uploadResume(UUID employeeId, MultipartFile file) {
+        validateResume(file);
 
+        Employee emp=employeeRepo.findByEmployeeIdAndDeletedFalse(employeeId)
+                .orElseThrow(()->new RuntimeException("employee not found "));
+
+        String fileName="resume_" + employeeId + getExtension(file);
+        Path path=Paths.get(RESUME_DIR + fileName);
+
+        saveFile(path,file);
+
+        emp.setResumePath(path.toString());
+        employeeRepo.save(emp);
+
+        return "Resume uploaded successfully";
+    }
 
     /*
            Helpers
@@ -78,6 +93,17 @@ public class EmployeeFileService {
                         && !type.equalsIgnoreCase("image/png"))) {
 
             throw new RuntimeException("Only JPG or PNG allowed");
+        }
+    }
+
+    private void validateResume(MultipartFile file) {
+        if (file.isEmpty()){
+            throw new RuntimeException("file can not be empty ");
+        }
+
+        String type=file.getContentType();
+        if (type==null || !type.equalsIgnoreCase("application/pdf")){
+            throw new RuntimeException("only pdfs are allowed ");
         }
     }
 }

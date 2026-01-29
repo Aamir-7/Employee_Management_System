@@ -31,4 +31,17 @@ public class EmployeeFileController {
                 file
         );
     }
+
+    @PostMapping("/{employeeId}/resume")
+    public String uploadResume(
+            @PathVariable UUID employeeId,
+            @RequestParam MultipartFile file,
+            @RequestHeader("Authorization") String authHeader
+    ){
+        jwtUtil.enforceAdminOrSelf(authHeader, employeeId);
+        return fileService.uploadResume(
+                employeeId,
+                file
+        );
+    }
 }

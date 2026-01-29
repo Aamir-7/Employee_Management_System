@@ -25,7 +25,7 @@ public class AuthService {
             throw new RuntimeException("Invalid credentials");
         }
 
-        // ✅ UUID + Role (matches JwtUtil exactly)
+        //  UUID + Role (matches JwtUtil exactly)
         return jwtUtil.generateToken(
                 emp.getEmployeeId(),
                 emp.getRole()

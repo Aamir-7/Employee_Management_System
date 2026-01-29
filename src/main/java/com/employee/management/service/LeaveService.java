@@ -1,5 +1,6 @@
 package com.employee.management.service;
 
+import com.employee.management.entity.Attendance;
 import com.employee.management.entity.Employee;
 import com.employee.management.entity.LeaveRequest;
 import com.employee.management.enums.AttendanceEnum;
@@ -111,11 +112,9 @@ public class LeaveService {
             throw new RuntimeException("Insufficient leave balance");
         }
 
-//        emp.setLeaveBalance(emp.getLeaveBalance() - leave.getTotalDays());
-//        employeeRepo.save(emp);
-
         leave.setStatus(LeaveStatus.APPROVED);
         return leaveRepo.save(leave);
+
     }
 
     /* ======================
@@ -179,34 +178,45 @@ public class LeaveService {
 
     }
 
+/*
     public String deductLeave(UUID leaveId,String authHeader) {
-        Claims claims= jwtUtil.extractClaims(authHeader.replace("Bearer ","").trim());
-        Role role=Role.valueOf(claims.get("role",String.class));
-
-        LeaveRequest leave=leaveRepo.findById(leaveId)
-                .orElseThrow(()->new RuntimeException("Leave not found"));
-
-        LocalDate today=LocalDate.now();
-        LocalTime now=LocalTime.now();
+        Claims claims=jwtUtil.extractClaims(authHeader.replace("Bearer ","").trim());
+        Role role=Role.valueOf(claims.get("role", String.class));
 
         if (role!=Role.ADMIN && role!=Role.MANAGER){
             throw new RuntimeException("not authorized ");
         }
 
-        if (!today.equals(leave.getStartDate())){
-            return "Not a leave day";
+        LeaveRequest leave=leaveRepo.findById(leaveId)
+                .orElseThrow(()->new RuntimeException("leave not found "));
+
+        if (leave.getStatus()!=LeaveStatus.APPROVED){
+            throw new RuntimeException("not eligible for deduction ");
+        }
+
+        LocalDate today=LocalDate.now();
+        LocalTime now=LocalTime.now();
+
+        if (today.isBefore(leave.getEndDate())){
+            return "return leave period not completed yet ";
         }
 
         if (now.isBefore(LocalTime.of(20,0))){
-            return "office hours not completed";
+            return "office hours not completed ";
         }
 
-        Employee emp=employeeRepo.findByEmployeeIdAndDeletedFalse(leave.getEmployeeId())
-                .orElseThrow(()->new RuntimeException("employee not found"));
+        Employee employee=employeeRepo.findByEmployeeIdAndDeletedFalse(leave.getEmployeeId())
+                .orElseThrow(()->new RuntimeException("employee not found "));
 
-        emp.setLeaveBalance(emp.getLeaveBalance()-1);
-        employeeRepo.save(emp);
+        employee.setLeaveBalance(employee.getLeaveBalance()- leave.getTotalDays());
+        employeeRepo.save(employee);
 
-        return "leave deducted "+today;
+        leave.setStatus(LeaveStatus.COMPLETED);
+        leaveRepo.save(leave);
+
+        return "leave deducted for " + leave.getTotalDays() + " days";
+
+
     }
+*/
 }

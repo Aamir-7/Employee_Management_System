@@ -37,6 +37,10 @@ public class LeaveRequest {
     @Column(nullable = false)
     private LeaveStatus status = LeaveStatus.PENDING;
 
+    @Column(nullable = false)
+    private Integer deductedDays = 0;
+
+
     /* ===== getters & setters ===== */
 
     public UUID getId() { return id; }
@@ -64,4 +68,12 @@ public class LeaveRequest {
 
     public LeaveStatus getStatus() { return status; }
     public void setStatus(LeaveStatus status) { this.status = status; }
+
+    public Integer getDeductedDays() {
+        return deductedDays;
+    }
+
+    public void setDeductedDays(Integer deductedDays) {
+        this.deductedDays = deductedDays;
+    }
 }

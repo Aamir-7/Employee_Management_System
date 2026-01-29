@@ -2,5 +2,8 @@ package com.employee.management.enums;
 
 public enum AttendanceEnum {
     PRESENT,
-    ABSENT
+    ABSENT,
+    ON_LEAVE,
+    HALF_DAY
+
 }

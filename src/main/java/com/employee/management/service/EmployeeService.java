@@ -141,6 +141,10 @@ public class EmployeeService {
         if (updated.getAlternatePhoneNumber() != null)
             existing.setAlternatePhoneNumber(updated.getAlternatePhoneNumber());
 
+        /* PERSONAL INFO */
+        if (updated.getDateOfBirth() != null)
+            existing.setDateOfBirth(updated.getDateOfBirth());
+
         if (updated.getGender() != null)
             existing.setGender(updated.getGender());
 
@@ -159,6 +163,14 @@ public class EmployeeService {
         if (updated.getPermanentAddress() != null)
             existing.setPermanentAddress(updated.getPermanentAddress());
 
+        /* EMERGENCY */
+        if (updated.getEmergencyContactName() != null)
+            existing.setEmergencyContactName(updated.getEmergencyContactName());
+
+        if (updated.getEmergencyContactNumber() != null)
+            existing.setEmergencyContactNumber(updated.getEmergencyContactNumber());
+
+        /* JOB DETAILS */
         if (updated.getJobTitle() != null)
             existing.setJobTitle(updated.getJobTitle());
 
@@ -174,17 +186,71 @@ public class EmployeeService {
         if (updated.getEmployeeStatus() != null)
             existing.setEmployeeStatus(updated.getEmployeeStatus());
 
+        if (updated.getDateOfJoining() != null)
+            existing.setDateOfJoining(updated.getDateOfJoining());
+
         if (updated.getOfficeLocation() != null)
             existing.setOfficeLocation(updated.getOfficeLocation());
 
+        /* REPORTING */
         if (updated.getManagerId() != null)
             existing.setManagerId(updated.getManagerId());
 
+        /* PERFORMANCE */
+        if (updated.getShiftTiming() != null)
+            existing.setShiftTiming(updated.getShiftTiming());
+
+        if (updated.getPerformanceRating() != null)
+            existing.setPerformanceRating(updated.getPerformanceRating());
+
+        if (updated.getAppraisalHistory() != null)
+            existing.setAppraisalHistory(updated.getAppraisalHistory());
+
+        /* SKILLS */
+        if (updated.getSkills() != null)
+            existing.setSkills(updated.getSkills());
+
+        if (updated.getEducation() != null)
+            existing.setEducation(updated.getEducation());
+
+        if (updated.getProjects() != null)
+            existing.setProjects(updated.getProjects());
+
+        if (updated.getLanguagesKnown() != null)
+            existing.setLanguagesKnown(updated.getLanguagesKnown());
+
+        /* FINANCIAL */
+        if (updated.getSalary() != null)
+            existing.setSalary(updated.getSalary());
+
+        if (updated.getBonusAmount() != null)
+            existing.setBonusAmount(updated.getBonusAmount());
+
+        /* LEAVE */
         if (updated.getLeaveBalance() != null)
             existing.setLeaveBalance(updated.getLeaveBalance());
 
+        /* DOCUMENTS */
+        if (updated.getPhotoPath() != null)
+            existing.setPhotoPath(updated.getPhotoPath());
+
+        if (updated.getResumePath() != null)
+            existing.setResumePath(updated.getResumePath());
+
+        /* LEGAL */
+        if (updated.getAadhaarNumber() != null)
+            existing.setAadhaarNumber(updated.getAadhaarNumber());
+
+        /* SYSTEM FLAGS */
+        if (updated.getActive() != null)
+            existing.setActive(updated.getActive());
+
+        if (updated.getDeleted() != null)
+            existing.setDeleted(updated.getDeleted());
+
         return repo.save(existing);
     }
+
     /* ======================
        SOFT DELETE
        ====================== */

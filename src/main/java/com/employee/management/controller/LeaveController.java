@@ -66,7 +66,8 @@ public class LeaveController {
         return service.approveLeave(leaveId, authHeader);
     }
 
-    //deduct leave
+    /*
+deduct leave
     @PutMapping("/{leaveId}/deduct")
     public String deductLeave(
             @PathVariable UUID leaveId,
@@ -74,6 +75,7 @@ public class LeaveController {
     ){
       return service.deductLeave(leaveId,authHeader);
     }
+*/
 
     // REJECT
     @PutMapping("/{leaveId}/reject")
