@@ -13,6 +13,17 @@ public interface EmployeeRepo extends JpaRepository<Employee, UUID> {
 
     Optional<Employee> findByEmployeeIdAndDeletedFalse(UUID employeeId);
 
-    List<Employee> findByDeletedFalse();   // ✅ ADD THIS
+    List<Employee> findByDeletedFalse();
+
+    long count();
+
+    long countByActiveTrue();
+
+    long countByDeletedFalse();
+
+    long countByManagerIdIsNull();
+
+    List<Employee>findByManagerId(UUID mangerId);
+
 }
 

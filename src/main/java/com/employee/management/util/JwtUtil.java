@@ -153,4 +153,9 @@ public class JwtUtil {
         return extractClaims(token);
     }
 
+    public UUID extractEmployeeId(String authHeader){
+        Claims claims=extractClaims(authHeader.replace("Bearer ","").trim());
+        return UUID.fromString(claims.getSubject());
+    }
+
 }

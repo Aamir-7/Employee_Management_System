@@ -2,6 +2,7 @@ package com.employee.management.service;
 
 import com.employee.management.entity.Employee;
 import com.employee.management.repository.EmployeeRepo;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.UUID;
 public class EmployeeService {
 
     private final EmployeeRepo repo;
+    private final PasswordEncoder passwordEncoder;
 
-    public EmployeeService(EmployeeRepo repo) {
+    public EmployeeService(EmployeeRepo repo, PasswordEncoder passwordEncoder) {
         this.repo = repo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /* ======================
@@ -38,6 +41,9 @@ public class EmployeeService {
         if (employee.getLeaveBalance() == null) {
             employee.setLeaveBalance(20);
         }
+        employee.setPassword(
+                passwordEncoder.encode(employee.getPassword())
+        );
         return repo.save(employee);
     }
 
