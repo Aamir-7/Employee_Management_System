@@ -1,5 +1,6 @@
 package com.employee.management.controller;
 
+import com.employee.management.dto.AuthResponse;
 import com.employee.management.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody Map<String, String> req) {
+    public AuthResponse login(@RequestBody Map<String, String> req) {
 
         String workEmail = req.get("workEmail");
         String password = req.get("password");
@@ -25,8 +26,27 @@ public class AuthController {
             throw new RuntimeException("workEmail and password are required");
         }
 
-        String token = authService.login(workEmail, password);
-        return Map.of("token", token);
+        return authService.login(workEmail, password);
     }
+
+    @PostMapping("/forgot-password")
+    public String forgotPassword(
+            @RequestBody Map<String,String>body
+    ){
+        authService.forgotPassword(body.get("workEmail"));
+        return "reset link sent if email exists ";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(
+            @RequestBody Map<String,String>body
+    ){
+        authService.resetPassword(
+                body.get("token"),
+                body.get("newPassword")
+        );
+        return "Password updated successfully";
+    }
+
 }
 

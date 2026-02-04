@@ -50,7 +50,6 @@ public class AdminDashboardService {
                 AttendanceEnum.HALF_DAY
         );
 
-        long pendingTasks=taskRepo.countByStatusAndDeletedFalse(TaskStatus.TODO);
 
         long employeesWithoutManager=employeeRepo.countByManagerIdIsNull();
 
@@ -63,7 +62,6 @@ public class AdminDashboardService {
                 presentToday,
                 absentToday,
                 halfDayToday,
-                pendingTasks,
                 employeesWithoutManager,
                 totalPendingTasks
         );
