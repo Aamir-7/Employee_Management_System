@@ -21,13 +21,15 @@ public class TaskService {
     private final TaskRepo taskRepo;
     private final EmployeeRepo employeeRepo;
     private final JwtUtil jwtUtil;
+    private final NotificationService notificationService;
 
     public TaskService(TaskRepo taskRepo,
                        EmployeeRepo employeeRepo,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil, NotificationService notificationService) {
         this.taskRepo = taskRepo;
         this.employeeRepo = employeeRepo;
         this.jwtUtil = jwtUtil;
+        this.notificationService = notificationService;
     }
 
     public TaskResponse createTask(
@@ -66,7 +68,13 @@ public class TaskService {
         task.setProject(project);
         task.setStatus(TaskStatus.TODO);
 
-        return mapToResponse(taskRepo.save(task));
+        taskRepo.save(task);
+        notificationService.sendTaskAssigned(
+                assignedTo,
+                task
+        );
+
+        return mapToResponse(task);
     }
 
     private TaskResponse mapToResponse(Task task) {
@@ -111,7 +119,21 @@ public class TaskService {
         Task task = taskRepo.findByIdAndDeletedFalse(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
+
         task.setStatus(status);
-        return mapToResponse(taskRepo.save(task));
+        taskRepo.save(task);
+
+        Employee assignee=task.getAssignedTo();
+
+        UUID managerId=assignee.getManagerId();
+
+        Employee emp=employeeRepo.findByEmployeeIdAndDeletedFalse(managerId)
+                .orElseThrow(()->new RuntimeException("manager not found"));
+
+        notificationService.sendTaskUpdated(
+                emp,
+                task
+        );
+        return mapToResponse(task);
     }
 }

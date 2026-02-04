@@ -1,17 +1,15 @@
 package com.employee.management.service;
 
-import com.employee.management.entity.Attendance;
 import com.employee.management.entity.Employee;
 import com.employee.management.entity.LeaveRequest;
-import com.employee.management.enums.AttendanceEnum;
 import com.employee.management.enums.LeaveStatus;
-import com.employee.management.enums.Role;
 import com.employee.management.repository.AttendanceRepo;
 import com.employee.management.repository.EmployeeRepo;
 import com.employee.management.repository.LeaveRequestRepo;
 import com.employee.management.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,14 +27,17 @@ public class LeaveService {
     private final LeaveRequestRepo leaveRepo;
     private final JwtUtil jwtUtil;
     private final AttendanceRepo attendanceRepo;
+    private final NotificationService notificationService;
+
 
     public LeaveService(EmployeeRepo employeeRepo,
                         LeaveRequestRepo leaveRepo,
-                        JwtUtil jwtUtil, AttendanceRepo attendanceRepo) {
+                        JwtUtil jwtUtil, AttendanceRepo attendanceRepo, NotificationService notificationService, ApplicationEventPublisher applicationEventPublisher) {
         this.employeeRepo = employeeRepo;
         this.leaveRepo = leaveRepo;
         this.jwtUtil = jwtUtil;
         this.attendanceRepo = attendanceRepo;
+        this.notificationService = notificationService;
     }
 
     /* ======================
@@ -70,7 +71,12 @@ public class LeaveService {
         leave.setTotalDays(totalDays);
         leave.setStatus(LeaveStatus.PENDING);
 
-        return leaveRepo.save(leave);
+        Employee manager=employeeRepo.findByEmployeeIdAndDeletedFalse(emp.getManagerId())
+                        .orElseThrow(()->new RuntimeException("manager not found "));
+
+        LeaveRequest savedLeave=leaveRepo.save(leave);
+        notificationService.sendLeaveApplied(manager,reason,description,startDate,endDate);
+        return savedLeave;
     }
 
     /* ======================
@@ -113,7 +119,10 @@ public class LeaveService {
         }
 
         leave.setStatus(LeaveStatus.APPROVED);
-        return leaveRepo.save(leave);
+        LeaveRequest savedLeave = leaveRepo.save(leave);
+        notificationService.sendLeaveApproved(emp, savedLeave);
+
+        return savedLeave;
 
     }
 
@@ -135,6 +144,9 @@ public class LeaveService {
         LeaveRequest leave = leaveRepo.findById(leaveId)
                 .orElseThrow(() -> new RuntimeException("Leave not found"));
 
+        Employee emp=employeeRepo.findByEmployeeIdAndDeletedFalse(leave.getEmployeeId())
+                .orElseThrow(()->new RuntimeException("employee not found"));
+
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new RuntimeException("Leave already processed");
         }
@@ -148,7 +160,10 @@ public class LeaveService {
         }
 
         leave.setStatus(LeaveStatus.REJECTED);
-        return leaveRepo.save(leave);
+        LeaveRequest savedLeave=leaveRepo.save(leave);
+        String safeReason = rejectReason == null ? "Not specified" : rejectReason;
+        notificationService.sendLeaveRejected(emp,safeReason);
+        return savedLeave;
     }
 
     public List<LeaveRequest> getAllLeaves() {
@@ -172,10 +187,13 @@ public class LeaveService {
             &&  LocalTime.now().isAfter(LocalTime.of(20,0))){
             throw new RuntimeException("can not cancel after office hours");
         }
+        Employee emp=employeeRepo.findByEmployeeIdAndDeletedFalse(leave.getManagerId())
+                        .orElseThrow(()->new RuntimeException("employee not found: "));
 
         leave.setStatus(LeaveStatus.CANCELLED);
-        return leaveRepo.save(leave);
-
+        leaveRepo.save(leave);
+        notificationService.sendLeaveCancelled(emp,leave);
+        return leave;
     }
 
 /*
