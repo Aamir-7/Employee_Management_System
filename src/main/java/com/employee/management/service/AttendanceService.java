@@ -33,13 +33,7 @@ public class AttendanceService {
 
         Attendance attendance = attendanceRepo
                 .findByEmployeeIdAndDate(employeeId, today)
-                .orElseGet(() -> {
-                    Attendance a = new Attendance();
-                    a.setEmployeeId(employeeId);
-                    a.setDate(today);
-                    a.setAttendance(AttendanceEnum.PRESENT);
-                    return a;
-                });
+                .orElse(null);
 
         // check ON_LEAVE
         if (attendance != null && attendance.getAttendance() == AttendanceEnum.ON_LEAVE) {
