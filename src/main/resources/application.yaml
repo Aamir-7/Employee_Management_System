@@ -3,9 +3,9 @@ spring:
     name: management
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/management
-    username: postgres
-    password: 12345
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -19,11 +19,6 @@ spring:
       max-file-size: 5MB
       max-request-size: 5MB
 
-#mailersend:
-#  api-key: mlsn.11c71af9203f1142a06cbf7c7b14cae62fdf5082b5bb6c51f4b4fb3eecb84a43
-#  from-email: no-reply@test-68zxl27181m4j905.mlsender.net
-#  from-name: Employee Management
-
   mail:
     host: smtp.gmail.com
     port: 587
@@ -36,6 +31,11 @@ spring:
           starttls:
             enable: true
 
+server:
+  port: ${PORT:8080}
 
 
-
+  #mailersend:
+#  api-key: mlsn.11c71af9203f1142a06cbf7c7b14cae62fdf5082b5bb6c51f4b4fb3eecb84a43
+#  from-email: no-reply@test-68zxl27181m4j905.mlsender.net
+#  from-name: Employee Management
