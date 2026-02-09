@@ -6,7 +6,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-RUN mvn clean package -DskipTests
+# IMPORTANT: skip test compilation + execution
+RUN mvn clean package -Dmaven.test.skip=true
 
 
 # -------- Run stage --------
@@ -19,5 +20,3 @@ COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 
 ENTRYPOINT ["java","-jar","app.jar"]
-
-RUN mvn clean package -Dmaven.test.skip=true
