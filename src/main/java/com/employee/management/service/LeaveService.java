@@ -75,7 +75,7 @@ public class LeaveService {
                         .orElseThrow(()->new RuntimeException("manager not found "));
 
         LeaveRequest savedLeave=leaveRepo.save(leave);
-        notificationService.sendLeaveApplied(manager,reason,description,startDate,endDate);
+        //notificationService.sendLeaveApplied(manager,reason,description,startDate,endDate);
         return savedLeave;
     }
 
