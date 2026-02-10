@@ -9,6 +9,8 @@ import com.employee.management.repository.LeaveRequestRepo;
 import com.employee.management.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,8 @@ public class LeaveService {
     private final JwtUtil jwtUtil;
     private final AttendanceRepo attendanceRepo;
     private final NotificationService notificationService;
+    private static final Logger log =
+            LoggerFactory.getLogger(LeaveService.class);
 
 
     public LeaveService(EmployeeRepo employeeRepo,
@@ -75,7 +79,17 @@ public class LeaveService {
                         .orElseThrow(()->new RuntimeException("manager not found "));
 
         LeaveRequest savedLeave=leaveRepo.save(leave);
-        //notificationService.sendLeaveApplied(manager,reason,description,startDate,endDate);
+        try {
+            notificationService.sendLeaveApplied(
+                    manager,
+                    reason,
+                    description,
+                    startDate,
+                    endDate
+            );
+        } catch (Exception e) {
+            log.error("Email notification failed", e);
+        }
         return savedLeave;
     }
 
