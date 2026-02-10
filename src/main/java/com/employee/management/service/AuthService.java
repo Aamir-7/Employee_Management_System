@@ -19,9 +19,9 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetRepo resetRepo;
-    private final MailService mailService;
+    private final SendGridEmailService mailService;
 
-    public AuthService(EmployeeRepo repo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, PasswordResetRepo resetRepo, MailService mailService) {
+    public AuthService(EmployeeRepo repo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, PasswordResetRepo resetRepo, SendGridEmailService mailService) {
         this.employeeRepo = repo;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
@@ -61,7 +61,7 @@ public class AuthService {
         reset.setExpiryTime(LocalDateTime.now().plusMinutes(15));
 
         resetRepo.save(reset);
-        mailService.send(
+        mailService.sendEmail(
                 email,
                 "Password Reset ",
                 "Click to reset: http://localhost:3000/reset?token="+token
