@@ -35,7 +35,8 @@ spring:
             enable: true
 
 server:
-  port: ${PORT:8080}
+  port: ${PORT:10000}
+  address: 0.0.0.0
 
 
   #mailersend:
