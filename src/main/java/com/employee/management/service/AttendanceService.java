@@ -51,6 +51,7 @@ public class AttendanceService {
             attendance.setEmployeeId(employeeId);
             attendance.setDate(today);
             attendance.setBreakHour(FIXED_BREAK_HOURS);
+            attendance.setAttendance(AttendanceEnum.PRESENT);
         }
 
         attendance.setInTime(LocalTime.now());
