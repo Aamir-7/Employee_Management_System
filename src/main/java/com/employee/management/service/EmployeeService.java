@@ -1,5 +1,7 @@
 package com.employee.management.service;
 
+import com.employee.management.dto.EmployeeCreateRequest;
+import com.employee.management.dto.EmployeeResponse;
 import com.employee.management.entity.Employee;
 import com.employee.management.repository.EmployeeRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,14 +39,91 @@ public class EmployeeService {
     /* ======================
        CREATE
        ====================== */
-    public Employee create(Employee employee) {
-        if (employee.getLeaveBalance() == null) {
-            employee.setLeaveBalance(20);
+    public EmployeeResponse create(EmployeeCreateRequest request) {
+
+        Employee employee=new Employee();
+
+        employee.setFirstName(request.getFirstName());
+        employee.setMiddleName(request.getMiddleName());
+        employee.setLastName(request.getLastName());
+        employee.setRole(request.getRole());
+
+        employee.setWorkEmail(request.getWorkEmail());
+        employee.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        employee.setMobileNumber(request.getMobileNumber());
+        employee.setAlternatePhoneNumber(request.getAlternatePhoneNumber());
+
+        employee.setDateOfBirth(request.getDateOfBirth());
+        employee.setGender(request.getGender());
+        employee.setNationality(request.getNationality());
+        employee.setMaritalStatus(request.getMaritalStatus());
+        employee.setBloodGroup(request.getBloodGroup());
+
+        employee.setCurrentAddress(request.getCurrentAddress());
+        employee.setPermanentAddress(request.getPermanentAddress());
+
+        employee.setEmergencyContactName(request.getEmergencyContactName());
+        employee.setEmergencyContactNumber(request.getEmergencyContactNumber());
+
+        employee.setJobTitle(request.getJobTitle());
+        employee.setDepartment(request.getDepartment());
+        employee.setWorkMode(request.getWorkMode());
+        employee.setEmploymentType(request.getEmploymentType());
+        employee.setDateOfJoining(request.getDateOfJoining());
+        employee.setOfficeLocation(request.getOfficeLocation());
+
+        employee.setManagerId(request.getManagerId());
+
+        employee.setShiftTiming(request.getShiftTiming());
+        employee.setPerformanceRating(request.getPerformanceRating());
+        employee.setAppraisalHistory(request.getAppraisalHistory());
+
+        //  convert array → string
+        if (request.getSkills() != null) {
+            employee.setSkills(String.join(",", request.getSkills()));
         }
-        employee.setPassword(
-                passwordEncoder.encode(employee.getPassword())
-        );
-        return repo.save(employee);
+
+        employee.setEducation(request.getEducation());
+        employee.setProjects(request.getProjects());
+        employee.setLanguagesKnown(request.getLanguagesKnown());
+
+        employee.setSalary(request.getSalary());
+        employee.setBonusAmount(request.getBonusAmount());
+
+        employee.setAadhaarNumber(request.getAadhaarNumber());
+
+        Employee saved = repo.save(employee);
+
+        return mapToResponse(saved);
+    }
+
+    private EmployeeResponse mapToResponse(Employee emp) {
+
+        EmployeeResponse res = new EmployeeResponse();
+
+        res.setEmployeeId(emp.getEmployeeId());
+        res.setFirstName(emp.getFirstName());
+        res.setMiddleName(emp.getMiddleName());
+        res.setLastName(emp.getLastName());
+        res.setRole(emp.getRole());
+        res.setWorkEmail(emp.getWorkEmail());
+        res.setMobileNumber(emp.getMobileNumber());
+        res.setJobTitle(emp.getJobTitle());
+        res.setDepartment(emp.getDepartment());
+        res.setEmployeeStatus(emp.getEmployeeStatus());
+        res.setDateOfJoining(emp.getDateOfJoining());
+        res.setManagerId(emp.getManagerId());
+        res.setPerformanceRating(emp.getPerformanceRating());
+        res.setLeaveBalance(emp.getLeaveBalance());
+        res.setPhotoPath(emp.getPhotoPath());
+        res.setResumePath(emp.getResumePath());
+
+        if (emp.getSkills() != null) {
+            res.setSkills(List.of(emp.getSkills().split(",")));
+        }
+
+        return res;
     }
 
     /* ======================

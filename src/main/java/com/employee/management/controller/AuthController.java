@@ -47,6 +47,5 @@ public class AuthController {
         );
         return "Password updated successfully";
     }
-
 }
 

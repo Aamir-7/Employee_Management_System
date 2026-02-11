@@ -1,5 +1,7 @@
 package com.employee.management.controller;
 
+import com.employee.management.dto.EmployeeCreateRequest;
+import com.employee.management.dto.EmployeeResponse;
 import com.employee.management.entity.Employee;
 import com.employee.management.service.EmployeeService;
 import com.employee.management.util.JwtUtil;
@@ -34,12 +36,12 @@ public class EmployeeController {
 
     // ADMIN → create employee
     @PostMapping
-    public Employee create(
+    public EmployeeResponse create(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody Employee employee
+            @RequestBody EmployeeCreateRequest request
     ) {
         jwtUtil.enforceAdmin(authHeader);
-        return service.create(employee);
+        return service.create(request);
     }
 
     // ADMIN → update employee
