@@ -81,6 +81,7 @@ public class LeaveService {
         LeaveRequest savedLeave=leaveRepo.save(leave);
         try {
             notificationService.sendLeaveApplied(
+                    emp,
                     manager,
                     reason,
                     description,

@@ -6,13 +6,14 @@ import com.sendgrid.Request;
 import com.sendgrid.Response;
 import com.sendgrid.SendGrid;
 import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 
 
 @Service
@@ -25,40 +26,73 @@ public class SendGridEmailService {
     private String fromEmail;
 
     private static final Logger log =
-            LoggerFactory.getLogger(NotificationService.class);
+            LoggerFactory.getLogger(SendGridEmailService.class);
 
-    public void sendEmail(String to, String subject, String contentText) {
-
-        log.info("ENTERED sendEmail()");
-        log.info("API KEY PRESENT = {}", apiKey != null);
-        log.info("FROM EMAIL = [{}]", fromEmail);
-        log.info("TO EMAIL = [{}]", to);
+    public void sendTemplateEmail(
+            String to,
+            String templateId,
+            Map<String, Object> dynamicData
+    ) {
 
         try {
             Email from = new Email(fromEmail);
             Email toEmail = new Email(to);
-            Content content = new Content("text/plain", contentText);
-            Mail mail = new Mail(from, subject, toEmail, content);
+
+            Mail mail = new Mail();
+            mail.setFrom(from);
+
+            Personalization personalization = new Personalization();
+            personalization.addTo(toEmail);
+
+            dynamicData.forEach(personalization::addDynamicTemplateData);
+
+            mail.addPersonalization(personalization);
+            mail.setTemplateId(templateId);
 
             SendGrid sg = new SendGrid(apiKey);
+
             Request request = new Request();
-
-
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
 
             Response response = sg.api(request);
 
-            log.info("SENDGRID STATUS CODE = {}", response.getStatusCode());
-            log.info("SENDGRID RESPONSE BODY = {}", response.getBody());
-            log.info("SENDGRID RESPONSE HEADERS = {}", response.getHeaders());
+            log.info("SendGrid Template Status: {}", response.getStatusCode());
+
         } catch (Exception e) {
-            log.info("Email sending failed but continuing flow");
+            log.error("Template email failed", e);
         }
     }
 
+    public void sendEmail(
+            String to,
+            String subject,
+            String contentText
+    ) {
 
+        try {
+            Email from = new Email(fromEmail);
+            Email toEmail = new Email(to);
+
+            Mail mail = new Mail(from, subject, toEmail,
+                    new com.sendgrid.helpers.mail.objects.Content("text/plain", contentText));
+
+            SendGrid sg = new SendGrid(apiKey);
+
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+
+            Response response = sg.api(request);
+
+            log.info("SendGrid Plain Email Status: {}", response.getStatusCode());
+
+        } catch (Exception e) {
+            log.error("Plain email failed", e);
+        }
+    }
 }
 
 
