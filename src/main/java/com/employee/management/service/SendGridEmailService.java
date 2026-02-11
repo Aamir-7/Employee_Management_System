@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 
 
 @Service
@@ -35,15 +34,16 @@ public class SendGridEmailService {
         log.error("FROM EMAIL = [{}]", fromEmail);
         log.error("TO EMAIL = [{}]", to);
 
-        Email from = new Email(fromEmail);
-        Email toEmail = new Email(to);
-        Content content = new Content("text/plain", contentText);
-        Mail mail = new Mail(from, subject, toEmail, content);
-
-        SendGrid sg = new SendGrid(apiKey);
-        Request request = new Request();
-
         try {
+            Email from = new Email(fromEmail);
+            Email toEmail = new Email(to);
+            Content content = new Content("text/plain", contentText);
+            Mail mail = new Mail(from, subject, toEmail, content);
+
+            SendGrid sg = new SendGrid(apiKey);
+            Request request = new Request();
+
+
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
@@ -53,14 +53,8 @@ public class SendGridEmailService {
             log.error("SENDGRID STATUS CODE = {}", response.getStatusCode());
             log.error("SENDGRID RESPONSE BODY = {}", response.getBody());
             log.error("SENDGRID RESPONSE HEADERS = {}", response.getHeaders());
-
-            if (response.getStatusCode() != 202) {
-                // DO NOT throw yet, just log
-                return;
-            }
-
         } catch (Exception e) {
-            log.error("SendGrid call failed", e);
+            log.error("Email sending failed but continuing flow");
         }
     }
 
