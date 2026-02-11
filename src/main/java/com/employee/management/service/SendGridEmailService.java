@@ -29,10 +29,10 @@ public class SendGridEmailService {
 
     public void sendEmail(String to, String subject, String contentText) {
 
-        log.error("ENTERED sendEmail()");
-        log.error("API KEY PRESENT = {}", apiKey != null);
-        log.error("FROM EMAIL = [{}]", fromEmail);
-        log.error("TO EMAIL = [{}]", to);
+        log.info("ENTERED sendEmail()");
+        log.info("API KEY PRESENT = {}", apiKey != null);
+        log.info("FROM EMAIL = [{}]", fromEmail);
+        log.info("TO EMAIL = [{}]", to);
 
         try {
             Email from = new Email(fromEmail);
@@ -50,11 +50,11 @@ public class SendGridEmailService {
 
             Response response = sg.api(request);
 
-            log.error("SENDGRID STATUS CODE = {}", response.getStatusCode());
-            log.error("SENDGRID RESPONSE BODY = {}", response.getBody());
-            log.error("SENDGRID RESPONSE HEADERS = {}", response.getHeaders());
+            log.info("SENDGRID STATUS CODE = {}", response.getStatusCode());
+            log.info("SENDGRID RESPONSE BODY = {}", response.getBody());
+            log.info("SENDGRID RESPONSE HEADERS = {}", response.getHeaders());
         } catch (Exception e) {
-            log.error("Email sending failed but continuing flow");
+            log.info("Email sending failed but continuing flow");
         }
     }
 
