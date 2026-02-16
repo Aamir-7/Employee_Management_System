@@ -1,7 +1,7 @@
 package com.employee.management.service;
 
-import com.employee.management.dto.EmployeeCreateRequest;
-import com.employee.management.dto.EmployeeResponse;
+import com.employee.management.dto.EmployeeRequestDTO;
+import com.employee.management.dto.EmployeeResponseDTO;
 import com.employee.management.entity.Employee;
 import com.employee.management.repository.EmployeeRepo;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,86 +21,150 @@ public class EmployeeService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /* ======================
-       GET ALL (NON-DELETED)
-       ====================== */
-    public List<Employee> getAll() {
-        return repo.findByDeletedFalse();
+    /* ====================== GET ALL ====================== */
+    public List<EmployeeResponseDTO> getAll() {
+        return repo.findByDeletedFalse()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    /* ======================
-       GET BY UUID
-       ====================== */
-    public Employee getById(UUID employeeId) {
-        return repo.findByEmployeeIdAndDeletedFalse(employeeId)
+    /* ====================== GET BY ID ====================== */
+    public EmployeeResponseDTO getById(UUID employeeId) {
+        Employee emp = repo.findByEmployeeIdAndDeletedFalse(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
+        return mapToResponse(emp);
     }
 
-    /* ======================
-       CREATE
-       ====================== */
-    public EmployeeResponse create(EmployeeCreateRequest request) {
+    /* ====================== CREATE ====================== */
+    public EmployeeResponseDTO create(EmployeeRequestDTO request) {
 
-        Employee employee=new Employee();
+        Employee employee = new Employee();
 
-        employee.setFirstName(request.getFirstName());
-        employee.setMiddleName(request.getMiddleName());
-        employee.setLastName(request.getLastName());
-        employee.setRole(request.getRole());
+        applyAllFields(employee, request, true);
 
-        employee.setWorkEmail(request.getWorkEmail());
-        employee.setPassword(passwordEncoder.encode(request.getPassword()));
+        return mapToResponse(repo.save(employee));
+    }
 
-        employee.setMobileNumber(request.getMobileNumber());
-        employee.setAlternatePhoneNumber(request.getAlternatePhoneNumber());
+    /* ====================== PUT (FULL UPDATE) ====================== */
+    public EmployeeResponseDTO updateEmployee(UUID employeeId, EmployeeRequestDTO request) {
 
-        employee.setDateOfBirth(request.getDateOfBirth());
-        employee.setGender(request.getGender());
-        employee.setNationality(request.getNationality());
-        employee.setMaritalStatus(request.getMaritalStatus());
-        employee.setBloodGroup(request.getBloodGroup());
+        Employee existing = repo.findByEmployeeIdAndDeletedFalse(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        employee.setCurrentAddress(request.getCurrentAddress());
-        employee.setPermanentAddress(request.getPermanentAddress());
+        applyAllFields(existing, request, true);
 
-        employee.setEmergencyContactName(request.getEmergencyContactName());
-        employee.setEmergencyContactNumber(request.getEmergencyContactNumber());
+        return mapToResponse(repo.save(existing));
+    }
 
-        employee.setJobTitle(request.getJobTitle());
-        employee.setDepartment(request.getDepartment());
-        employee.setWorkMode(request.getWorkMode());
-        employee.setEmploymentType(request.getEmploymentType());
-        employee.setDateOfJoining(request.getDateOfJoining());
-        employee.setOfficeLocation(request.getOfficeLocation());
+    /* ====================== PATCH (PARTIAL UPDATE) ====================== */
+    public EmployeeResponseDTO patchEmployee(UUID employeeId, EmployeeRequestDTO request) {
 
-        employee.setManagerId(request.getManagerId());
+        Employee existing = repo.findByEmployeeIdAndDeletedFalse(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        employee.setShiftTiming(request.getShiftTiming());
-        employee.setPerformanceRating(request.getPerformanceRating());
-        employee.setAppraisalHistory(request.getAppraisalHistory());
+        applyPatch(existing, request);
 
-        //  convert array → string
-        if (request.getSkills() != null) {
-            employee.setSkills(String.join(",", request.getSkills()));
+        return mapToResponse(repo.save(existing));
+    }
+
+    /* ====================== DELETE ====================== */
+    public void deleteById(UUID employeeId) {
+        Employee emp = repo.findByEmployeeIdAndDeletedFalse(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        emp.setDeleted(true);
+        repo.save(emp);
+    }
+
+    /* =========================================================
+       FIELD APPLY METHODS
+       ========================================================= */
+
+    private void applyAllFields(Employee e, EmployeeRequestDTO r, boolean encodePassword) {
+
+        e.setFirstName(r.getFirstName());
+        e.setMiddleName(r.getMiddleName());
+        e.setLastName(r.getLastName());
+        e.setRole(r.getRole());
+
+        e.setWorkEmail(r.getWorkEmail());
+
+        if (r.getPassword() != null && encodePassword) {
+            e.setPassword(passwordEncoder.encode(r.getPassword()));
         }
 
-        employee.setEducation(request.getEducation());
-        employee.setProjects(request.getProjects());
-        employee.setLanguagesKnown(request.getLanguagesKnown());
+        e.setMicrosoftId(r.getMicrosoftId());
 
-        employee.setSalary(request.getSalary());
-        employee.setBonusAmount(request.getBonusAmount());
+        e.setMobileNumber(r.getMobileNumber());
+        e.setAlternatePhoneNumber(r.getAlternatePhoneNumber());
 
-        employee.setAadhaarNumber(request.getAadhaarNumber());
+        e.setDateOfBirth(r.getDateOfBirth());
+        e.setGender(r.getGender());
+        e.setNationality(r.getNationality());
+        e.setMaritalStatus(r.getMaritalStatus());
+        e.setBloodGroup(r.getBloodGroup());
 
-        Employee saved = repo.save(employee);
+        e.setCurrentAddress(r.getCurrentAddress());
+        e.setPermanentAddress(r.getPermanentAddress());
 
-        return mapToResponse(saved);
+        e.setEmergencyContactName(r.getEmergencyContactName());
+        e.setEmergencyContactNumber(r.getEmergencyContactNumber());
+
+        e.setJobTitle(r.getJobTitle());
+        e.setDepartment(r.getDepartment());
+        e.setWorkMode(r.getWorkMode());
+        e.setEmploymentType(r.getEmploymentType());
+        e.setEmployeeStatus(r.getEmployeeStatus());
+        e.setDateOfJoining(r.getDateOfJoining());
+        e.setOfficeLocation(r.getOfficeLocation());
+        e.setManagerId(r.getManagerId());
+
+        e.setShiftTiming(r.getShiftTiming());
+        e.setPerformanceRating(r.getPerformanceRating());
+        e.setAppraisalHistory(r.getAppraisalHistory());
+
+        // ARRAY → STRING
+        if (r.getSkills() != null) {
+            e.setSkills(String.join(",", r.getSkills()));
+        }
+
+        e.setEducation(r.getEducation());
+        e.setProjects(r.getProjects());
+        e.setLanguagesKnown(r.getLanguagesKnown());
+
+        e.setSalary(r.getSalary());
+        e.setLeaveBalance(r.getLeaveBalance());
+        e.setAadhaarNumber(r.getAadhaarNumber());
+        e.setActive(r.getActive());
     }
 
-    private EmployeeResponse mapToResponse(Employee emp) {
+    private void applyPatch(Employee e, EmployeeRequestDTO r) {
 
-        EmployeeResponse res = new EmployeeResponse();
+        if (r.getFirstName() != null) e.setFirstName(r.getFirstName());
+        if (r.getMiddleName() != null) e.setMiddleName(r.getMiddleName());
+        if (r.getLastName() != null) e.setLastName(r.getLastName());
+        if (r.getRole() != null) e.setRole(r.getRole());
+        if (r.getWorkEmail() != null) e.setWorkEmail(r.getWorkEmail());
+        if (r.getPassword() != null)
+            e.setPassword(passwordEncoder.encode(r.getPassword()));
+
+        if (r.getMobileNumber() != null) e.setMobileNumber(r.getMobileNumber());
+        if (r.getDepartment() != null) e.setDepartment(r.getDepartment());
+        if (r.getJobTitle() != null) e.setJobTitle(r.getJobTitle());
+        if (r.getEmploymentType() != null) e.setEmploymentType(r.getEmploymentType());
+        if (r.getWorkMode() != null) e.setWorkMode(r.getWorkMode());
+        if (r.getPerformanceRating() != null) e.setPerformanceRating(r.getPerformanceRating());
+        if (r.getSalary() != null) e.setSalary(r.getSalary());
+        if (r.getLeaveBalance() != null) e.setLeaveBalance(r.getLeaveBalance());
+        if (r.getActive() != null) e.setActive(r.getActive());
+
+        if (r.getSkills() != null)
+            e.setSkills(String.join(",", r.getSkills()));
+    }
+
+    private EmployeeResponseDTO mapToResponse(Employee emp) {
+
+        EmployeeResponseDTO res = new EmployeeResponseDTO();
 
         res.setEmployeeId(emp.getEmployeeId());
         res.setFirstName(emp.getFirstName());
@@ -109,240 +173,26 @@ public class EmployeeService {
         res.setRole(emp.getRole());
         res.setWorkEmail(emp.getWorkEmail());
         res.setMobileNumber(emp.getMobileNumber());
+
         res.setJobTitle(emp.getJobTitle());
         res.setDepartment(emp.getDepartment());
+        res.setWorkMode(emp.getWorkMode());
+        res.setEmploymentType(emp.getEmploymentType());
         res.setEmployeeStatus(emp.getEmployeeStatus());
         res.setDateOfJoining(emp.getDateOfJoining());
         res.setManagerId(emp.getManagerId());
+
         res.setPerformanceRating(emp.getPerformanceRating());
+        res.setSalary(emp.getSalary());
         res.setLeaveBalance(emp.getLeaveBalance());
         res.setPhotoPath(emp.getPhotoPath());
         res.setResumePath(emp.getResumePath());
+        res.setActive(emp.getActive());
 
-        if (emp.getSkills() != null) {
+        if (emp.getSkills() != null && !emp.getSkills().isBlank()) {
             res.setSkills(List.of(emp.getSkills().split(",")));
         }
 
         return res;
-    }
-
-    /* ======================
-       FULL UPDATE (PUT)
-       ====================== */
-    public Employee updateEmployee(UUID employeeId, Employee updated) {
-
-        Employee existing = repo.findByEmployeeIdAndDeletedFalse(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-        existing.setFirstName(updated.getFirstName());
-        existing.setMiddleName(updated.getMiddleName());
-        existing.setLastName(updated.getLastName());
-        existing.setRole(updated.getRole());
-
-        existing.setWorkEmail(updated.getWorkEmail());
-        existing.setPassword(updated.getPassword());
-        existing.setMicrosoftId(updated.getMicrosoftId());
-
-        existing.setMobileNumber(updated.getMobileNumber());
-        existing.setAlternatePhoneNumber(updated.getAlternatePhoneNumber());
-
-        existing.setDateOfBirth(updated.getDateOfBirth());
-        existing.setGender(updated.getGender());
-        existing.setNationality(updated.getNationality());
-        existing.setMaritalStatus(updated.getMaritalStatus());
-        existing.setBloodGroup(updated.getBloodGroup());
-
-        existing.setCurrentAddress(updated.getCurrentAddress());
-        existing.setPermanentAddress(updated.getPermanentAddress());
-
-        existing.setEmergencyContactName(updated.getEmergencyContactName());
-        existing.setEmergencyContactNumber(updated.getEmergencyContactNumber());
-
-        existing.setJobTitle(updated.getJobTitle());
-        existing.setDepartment(updated.getDepartment());
-        existing.setWorkMode(updated.getWorkMode());
-        existing.setEmploymentType(updated.getEmploymentType());
-        existing.setEmployeeStatus(updated.getEmployeeStatus());
-        existing.setDateOfJoining(updated.getDateOfJoining());
-        existing.setOfficeLocation(updated.getOfficeLocation());
-
-        existing.setManagerId(updated.getManagerId());
-
-        existing.setShiftTiming(updated.getShiftTiming());
-        existing.setPerformanceRating(updated.getPerformanceRating());
-        existing.setAppraisalHistory(updated.getAppraisalHistory());
-
-        existing.setSkills(updated.getSkills());
-        existing.setEducation(updated.getEducation());
-        existing.setProjects(updated.getProjects());
-        existing.setLanguagesKnown(updated.getLanguagesKnown());
-
-        existing.setSalary(updated.getSalary());
-        existing.setBonusAmount(updated.getBonusAmount());
-
-        existing.setLeaveBalance(updated.getLeaveBalance());
-
-        existing.setPhotoPath(updated.getPhotoPath());
-        existing.setResumePath(updated.getResumePath());
-
-        existing.setAadhaarNumber(updated.getAadhaarNumber());
-        existing.setActive(updated.getActive());
-
-        return repo.save(existing);
-    }
-
-    /* ======================
-       PARTIAL UPDATE (PATCH)
-       ====================== */
-    public Employee patchEmployee(UUID employeeId, Employee updated) {
-
-        Employee existing = repo.findByEmployeeIdAndDeletedFalse(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-        if (updated.getFirstName() != null)
-            existing.setFirstName(updated.getFirstName());
-
-        if (updated.getMiddleName() != null)
-            existing.setMiddleName(updated.getMiddleName());
-
-        if (updated.getLastName() != null)
-            existing.setLastName(updated.getLastName());
-
-        if (updated.getRole() != null)
-            existing.setRole(updated.getRole());
-
-        if (updated.getWorkEmail() != null)
-            existing.setWorkEmail(updated.getWorkEmail());
-
-        if (updated.getPassword() != null)
-            existing.setPassword(updated.getPassword());
-
-        if (updated.getMicrosoftId() != null)
-            existing.setMicrosoftId(updated.getMicrosoftId());
-
-        if (updated.getMobileNumber() != null)
-            existing.setMobileNumber(updated.getMobileNumber());
-
-        if (updated.getAlternatePhoneNumber() != null)
-            existing.setAlternatePhoneNumber(updated.getAlternatePhoneNumber());
-
-        /* PERSONAL INFO */
-        if (updated.getDateOfBirth() != null)
-            existing.setDateOfBirth(updated.getDateOfBirth());
-
-        if (updated.getGender() != null)
-            existing.setGender(updated.getGender());
-
-        if (updated.getNationality() != null)
-            existing.setNationality(updated.getNationality());
-
-        if (updated.getMaritalStatus() != null)
-            existing.setMaritalStatus(updated.getMaritalStatus());
-
-        if (updated.getBloodGroup() != null)
-            existing.setBloodGroup(updated.getBloodGroup());
-
-        if (updated.getCurrentAddress() != null)
-            existing.setCurrentAddress(updated.getCurrentAddress());
-
-        if (updated.getPermanentAddress() != null)
-            existing.setPermanentAddress(updated.getPermanentAddress());
-
-        /* EMERGENCY */
-        if (updated.getEmergencyContactName() != null)
-            existing.setEmergencyContactName(updated.getEmergencyContactName());
-
-        if (updated.getEmergencyContactNumber() != null)
-            existing.setEmergencyContactNumber(updated.getEmergencyContactNumber());
-
-        /* JOB DETAILS */
-        if (updated.getJobTitle() != null)
-            existing.setJobTitle(updated.getJobTitle());
-
-        if (updated.getDepartment() != null)
-            existing.setDepartment(updated.getDepartment());
-
-        if (updated.getWorkMode() != null)
-            existing.setWorkMode(updated.getWorkMode());
-
-        if (updated.getEmploymentType() != null)
-            existing.setEmploymentType(updated.getEmploymentType());
-
-        if (updated.getEmployeeStatus() != null)
-            existing.setEmployeeStatus(updated.getEmployeeStatus());
-
-        if (updated.getDateOfJoining() != null)
-            existing.setDateOfJoining(updated.getDateOfJoining());
-
-        if (updated.getOfficeLocation() != null)
-            existing.setOfficeLocation(updated.getOfficeLocation());
-
-        /* REPORTING */
-        if (updated.getManagerId() != null)
-            existing.setManagerId(updated.getManagerId());
-
-        /* PERFORMANCE */
-        if (updated.getShiftTiming() != null)
-            existing.setShiftTiming(updated.getShiftTiming());
-
-        if (updated.getPerformanceRating() != null)
-            existing.setPerformanceRating(updated.getPerformanceRating());
-
-        if (updated.getAppraisalHistory() != null)
-            existing.setAppraisalHistory(updated.getAppraisalHistory());
-
-        /* SKILLS */
-        if (updated.getSkills() != null)
-            existing.setSkills(updated.getSkills());
-
-        if (updated.getEducation() != null)
-            existing.setEducation(updated.getEducation());
-
-        if (updated.getProjects() != null)
-            existing.setProjects(updated.getProjects());
-
-        if (updated.getLanguagesKnown() != null)
-            existing.setLanguagesKnown(updated.getLanguagesKnown());
-
-        /* FINANCIAL */
-        if (updated.getSalary() != null)
-            existing.setSalary(updated.getSalary());
-
-        if (updated.getBonusAmount() != null)
-            existing.setBonusAmount(updated.getBonusAmount());
-
-        /* LEAVE */
-        if (updated.getLeaveBalance() != null)
-            existing.setLeaveBalance(updated.getLeaveBalance());
-
-        /* DOCUMENTS */
-        if (updated.getPhotoPath() != null)
-            existing.setPhotoPath(updated.getPhotoPath());
-
-        if (updated.getResumePath() != null)
-            existing.setResumePath(updated.getResumePath());
-
-        /* LEGAL */
-        if (updated.getAadhaarNumber() != null)
-            existing.setAadhaarNumber(updated.getAadhaarNumber());
-
-        /* SYSTEM FLAGS */
-        if (updated.getActive() != null)
-            existing.setActive(updated.getActive());
-
-        if (updated.getDeleted() != null)
-            existing.setDeleted(updated.getDeleted());
-
-        return repo.save(existing);
-    }
-
-    /* ======================
-       SOFT DELETE
-       ====================== */
-    public void deleteById(UUID employeeId) {
-        Employee emp = repo.findByEmployeeIdAndDeletedFalse(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-        emp.setDeleted(true);
-        repo.save(emp);
     }
 }

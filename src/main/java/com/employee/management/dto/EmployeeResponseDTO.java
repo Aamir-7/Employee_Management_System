@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public class EmployeeResponse {
+public class EmployeeResponseDTO {
 
     private UUID employeeId;
 
@@ -17,27 +17,30 @@ public class EmployeeResponse {
     private Role role;
 
     private String workEmail;
-
     private String mobileNumber;
 
     private String jobTitle;
     private String department;
+    private WorkMode workMode;
+    private EmploymentType employmentType;
 
     private EmployeeStatus employeeStatus;
     private LocalDate dateOfJoining;
-
     private UUID managerId;
 
     private Double performanceRating;
 
-    private List<String> skills;
+    private List<String> skills;  //  ARRAY RETURN
 
     private Integer leaveBalance;
 
     private String photoPath;
     private String resumePath;
 
-    // getters & setters
+    private Boolean active;
+    private BigDecimal salary;
+
+    // --- getters & setters ---
 
     public UUID getEmployeeId() {
         return employeeId;
@@ -111,6 +114,22 @@ public class EmployeeResponse {
         this.department = department;
     }
 
+    public WorkMode getWorkMode() {
+        return workMode;
+    }
+
+    public void setWorkMode(WorkMode workMode) {
+        this.workMode = workMode;
+    }
+
+    public EmploymentType getEmploymentType() {
+        return employmentType;
+    }
+
+    public void setEmploymentType(EmploymentType employmentType) {
+        this.employmentType = employmentType;
+    }
+
     public EmployeeStatus getEmployeeStatus() {
         return employeeStatus;
     }
@@ -174,5 +193,22 @@ public class EmployeeResponse {
     public void setResumePath(String resumePath) {
         this.resumePath = resumePath;
     }
-}
 
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public void setSalary(BigDecimal salary) {
+        this.salary = salary;
+    }
+
+    public BigDecimal getSalary() {
+        return salary;
+    }
+
+
+}

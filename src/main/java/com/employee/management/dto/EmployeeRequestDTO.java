@@ -7,20 +7,24 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public class EmployeeCreateRequest {
+public class EmployeeRequestDTO {
 
+    /* BASIC */
     private String firstName;
     private String middleName;
     private String lastName;
     private Role role;
 
+    /* AUTH */
     private String workEmail;
     private String password;
     private String microsoftId;
 
+    /* CONTACT */
     private String mobileNumber;
     private String alternatePhoneNumber;
 
+    /* PERSONAL */
     private LocalDate dateOfBirth;
     private String gender;
     private String nationality;
@@ -29,33 +33,71 @@ public class EmployeeCreateRequest {
     private String currentAddress;
     private String permanentAddress;
 
+    /* EMERGENCY */
     private String emergencyContactName;
     private String emergencyContactNumber;
 
+    /* JOB */
     private String jobTitle;
     private String department;
     private WorkMode workMode;
     private EmploymentType employmentType;
+    private EmployeeStatus employeeStatus;   //  ADDED
     private LocalDate dateOfJoining;
     private String officeLocation;
-
     private UUID managerId;
 
+    /* PERFORMANCE */
     private String shiftTiming;
     private Double performanceRating;
     private String appraisalHistory;
 
-    private List<String> skills;
+    /* SKILLS */
+    private List<String> skills;  //  ARRAY
+
     private String education;
     private String projects;
     private String languagesKnown;
 
+    /* FINANCIAL */
     private BigDecimal salary;
     private Double bonusAmount;
 
+    /* LEAVE */
+    private Integer leaveBalance;   //  ADDED (optional)
+
+    /* LEGAL */
     private String aadhaarNumber;
 
-    // getters & setters
+    /* SYSTEM */
+    private Boolean active;  //
+
+
+    // --- getters & setters ---
+
+    public Integer getLeaveBalance() {
+        return leaveBalance;
+    }
+
+    public void setLeaveBalance(Integer leaveBalance) {
+        this.leaveBalance = leaveBalance;
+    }
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    public EmployeeStatus getEmployeeStatus() {
+        return employeeStatus;
+    }
+
+    public void setEmployeeStatus(EmployeeStatus employeeStatus) {
+        this.employeeStatus = employeeStatus;
+    }
 
     public String getFirstName() {
         return firstName;

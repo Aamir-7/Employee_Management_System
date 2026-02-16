@@ -135,7 +135,6 @@ public class Employee {
        FINANCIAL
        ====================== */
     private BigDecimal salary;
-    private Double bonusAmount;
 
     /* ======================
        LEAVE
@@ -203,7 +202,6 @@ public class Employee {
             String projects,
             String languagesKnown,
             BigDecimal salary,
-            Double bonusAmount,
             Integer leaveBalance,
             String photoPath,
             String resumePath,
@@ -242,7 +240,6 @@ public class Employee {
         this.projects = projects;
         this.languagesKnown = languagesKnown;
         this.salary = salary;
-        this.bonusAmount = bonusAmount;
         this.leaveBalance = leaveBalance;
         this.photoPath = photoPath;
         this.resumePath = resumePath;
@@ -521,13 +518,6 @@ public class Employee {
         this.salary = salary;
     }
 
-    public Double getBonusAmount() {
-        return bonusAmount;
-    }
-
-    public void setBonusAmount(Double bonusAmount) {
-        this.bonusAmount = bonusAmount;
-    }
 
     public Integer getLeaveBalance() {
         return leaveBalance;
