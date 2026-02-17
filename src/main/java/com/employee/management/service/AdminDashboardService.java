@@ -55,9 +55,12 @@ public class AdminDashboardService {
 
         long totalPendingTasks=taskRepo.countByStatusAndDeletedFalse(TaskStatus.TODO);
 
+        long totalLeave=20;
+
         return new AdminDashboardResponse(
                 totalEmployees,
                 totalPendingLeaves,
+                totalLeave,
                 onLeaveToday,
                 presentToday,
                 absentToday,

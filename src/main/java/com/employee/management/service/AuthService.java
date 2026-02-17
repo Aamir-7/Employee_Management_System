@@ -3,8 +3,10 @@ package com.employee.management.service;
 import com.employee.management.dto.AuthResponse;
 import com.employee.management.entity.Employee;
 import com.employee.management.entity.PasswordResetToken;
+import com.employee.management.entity.RefreshToken;
 import com.employee.management.repository.EmployeeRepo;
 import com.employee.management.repository.PasswordResetRepo;
+import com.employee.management.repository.RefreshTokenRepo;
 import com.employee.management.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,15 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetRepo resetRepo;
     private final SendGridEmailService mailService;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(EmployeeRepo repo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, PasswordResetRepo resetRepo, SendGridEmailService mailService) {
+    public AuthService(EmployeeRepo repo, JwtUtil jwtUtil, PasswordEncoder passwordEncoder, PasswordResetRepo resetRepo, SendGridEmailService mailService, RefreshTokenService refreshTokenService) {
         this.employeeRepo = repo;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
         this.resetRepo = resetRepo;
         this.mailService = mailService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public AuthResponse login(String workEmail, String rawPassword) {
@@ -44,7 +48,13 @@ public class AuthService {
                 emp.getEmployeeId(),
                 emp.getRole()
         );
-        return new AuthResponse(token,emp.getRole());
+
+        RefreshToken refreshToken =refreshTokenService.createToken(emp.getEmployeeId());
+        return new AuthResponse(
+                token,
+                emp.getRole(),
+                refreshToken.getToken()
+        );
     }
 
     public void forgotPassword(String email) {

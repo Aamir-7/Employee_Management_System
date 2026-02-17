@@ -1,7 +1,12 @@
 package com.employee.management.controller;
 
 import com.employee.management.dto.AuthResponse;
+import com.employee.management.entity.Employee;
+import com.employee.management.entity.RefreshToken;
+import com.employee.management.repository.EmployeeRepo;
 import com.employee.management.service.AuthService;
+import com.employee.management.service.RefreshTokenService;
+import com.employee.management.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -11,9 +16,15 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final RefreshTokenService refreshTokenService;
+    private final EmployeeRepo employeeRepo;
+    private final JwtUtil jwtUtil;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, RefreshTokenService refreshTokenService, EmployeeRepo employeeRepo, JwtUtil jwtUtil) {
         this.authService = authService;
+        this.refreshTokenService = refreshTokenService;
+        this.employeeRepo = employeeRepo;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/login")
@@ -46,6 +57,27 @@ public class AuthController {
                 body.get("newPassword")
         );
         return "Password updated successfully";
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(
+            @RequestBody Map<String,String>body
+    ){
+        String refreshToken=body.get("refreshToken");
+
+        RefreshToken refresh=refreshTokenService.validateToken(refreshToken);
+
+        Employee emp = employeeRepo
+                .findByEmployeeIdAndDeletedFalse(refresh.getEmployeeId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String newAccessToken=jwtUtil.generateToken(emp.getEmployeeId(),emp.getRole());
+
+        return new AuthResponse(
+                newAccessToken,
+                emp.getRole(),
+                refreshToken
+        );
     }
 }
 

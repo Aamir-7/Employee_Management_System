@@ -4,6 +4,7 @@ public class AdminDashboardResponse {
 
     private long totalEmployees;
     private long pendingLeaves;
+    private long totalLeave;
     private long onLeaveToday;
     private long presentToday;
     private long absentToday;
@@ -15,15 +16,18 @@ public class AdminDashboardResponse {
     public AdminDashboardResponse(
             long totalEmployees,
             long pendingLeaves,
+            long totalLeave,
             long onLeaveToday,
             long presentToday,
             long absentToday,
             long halfDayToday,
             long employeesWithoutManager,
             long totalPendingTasks
+
     ) {
         this.totalEmployees = totalEmployees;
         this.pendingLeaves = pendingLeaves;
+        this.totalLeave=totalLeave;
         this.onLeaveToday = onLeaveToday;
         this.presentToday = presentToday;
         this.absentToday = absentToday;
@@ -31,7 +35,10 @@ public class AdminDashboardResponse {
         this.employeesWithoutManager=employeesWithoutManager;
         this.totalPendingTasks =totalPendingTasks;
 
+
     }
+
+
 
     public long getHalfDayToday() {
         return halfDayToday;
@@ -48,6 +55,8 @@ public class AdminDashboardResponse {
     public long getPendingLeaves() {
         return pendingLeaves;
     }
+
+    public long getTotalLeave() {return totalLeave;}
 
     public long getOnLeaveToday() {
         return onLeaveToday;

@@ -3,6 +3,7 @@ package com.employee.management.controller;
 import com.employee.management.entity.LeaveRequest;
 import com.employee.management.enums.LeaveStatus;
 import com.employee.management.service.LeaveService;
+import com.employee.management.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -15,9 +16,11 @@ import java.util.UUID;
 public class LeaveController {
 
     private final LeaveService service;
+    private final JwtUtil jwtUtil;
 
-    public LeaveController(LeaveService service) {
+    public LeaveController(LeaveService service, JwtUtil jwtUtil) {
         this.service = service;
+        this.jwtUtil = jwtUtil;
     }
 
     // APPLY LEAVE
@@ -38,8 +41,10 @@ public class LeaveController {
     // GET LEAVES BY STATUS
     @GetMapping
     public List<LeaveRequest> getLeaves(
+            @RequestHeader("Authorization")String authHeader,
             @RequestParam(required = false) LeaveStatus status
     ) {
+       jwtUtil.enforceAdminOrManager(authHeader);
         return status == null
                 ? service.getAllLeaves()
                 : service.getLeavesByStatus(status);
@@ -47,13 +52,19 @@ public class LeaveController {
 
     // MANAGER → VIEW PENDING
     @GetMapping("/manager/{managerId}")
-    public List<LeaveRequest> pendingLeaves(@PathVariable UUID managerId) {
+    public List<LeaveRequest> pendingLeaves(
+            @RequestHeader("Authorization")String authHeader,
+            @PathVariable UUID managerId
+    ) {
+        jwtUtil.enforceAdminOrManager(authHeader);
         return service.getPendingLeaves(managerId);
     }
 
     //employee cancel leave
     @PutMapping("/{leaveId}/cancel")
-    public LeaveRequest cancelLeave(@PathVariable UUID leaveId){
+    public LeaveRequest cancelLeave(
+            @PathVariable UUID leaveId
+    ){
         return service.cancelLeave(leaveId);
     }
 
