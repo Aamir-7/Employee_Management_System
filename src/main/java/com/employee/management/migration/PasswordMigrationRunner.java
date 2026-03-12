@@ -1,4 +1,4 @@
-//                          FOR MIGRATING OLD SIMPLE PASSWORDS TO HASHED PASSWORDS
+//                          //FOR MIGRATING OLD SIMPLE PASSWORDS TO HASHED PASSWORDS
 //
 // package com.employee.management.migration;
 //
@@ -42,4 +42,4 @@
 //        }
 //    }
 //}
-
+//
