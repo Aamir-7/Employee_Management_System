@@ -1,5 +1,6 @@
 package com.employee.management.service;
 
+import com.employee.management.dto.LeaveResponseDTO;
 import com.employee.management.entity.Employee;
 import com.employee.management.entity.LeaveRequest;
 import com.employee.management.enums.LeaveStatus;
@@ -211,7 +212,41 @@ public class LeaveService {
         return leave;
     }
 
+    public List<LeaveResponseDTO> getMyLeaves(UUID empId) {
+
+        return leaveRepo.findByEmployeeIdOrderByStartDateDesc(empId)
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    public LeaveResponseDTO mapToDTO(LeaveRequest leaveRequest){
+        LeaveResponseDTO dto=new LeaveResponseDTO();
+        dto.setId(leaveRequest.getId());
+        dto.setEmployeeId(leaveRequest.getEmployeeId());
+        dto.setManagerId(leaveRequest.getManagerId());
+        dto.setReason(leaveRequest.getReason());
+        dto.setDescription(leaveRequest.getDescription());
+        dto.setStartDate(leaveRequest.getStartDate());
+        dto.setEndDate(leaveRequest.getEndDate());
+        dto.setTotalDays(leaveRequest.getTotalDays());
+        dto.setStatus(leaveRequest.getStatus());
+        dto.setDeductedDays(leaveRequest.getDeductedDays());
+
+        return dto;
+    }
+
 /*
+UUID id,
+            UUID employeeId,
+            UUID managerId,
+            String reason,
+            String description,
+            LocalDate startDate,
+            LocalDate endDate,
+            Integer totalDays,
+            LeaveStatus status,
+            Integer deductedDays
     public String deductLeave(UUID leaveId,String authHeader) {
         Claims claims=jwtUtil.extractClaims(authHeader.replace("Bearer ","").trim());
         Role role=Role.valueOf(claims.get("role", String.class));

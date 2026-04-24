@@ -1,5 +1,6 @@
 package com.employee.management.controller;
 
+import com.employee.management.dto.LeaveResponseDTO;
 import com.employee.management.entity.LeaveRequest;
 import com.employee.management.enums.LeaveStatus;
 import com.employee.management.service.LeaveService;
@@ -97,5 +98,14 @@ deduct leave
     ) {
         String reason = body != null ? body.get("description") : null;
         return service.rejectLeave(leaveId, authHeader, reason);
+    }
+
+    //Get My Leaves
+    @GetMapping("/my")
+    public List<LeaveResponseDTO> getMyLeaves(
+            @RequestHeader("Authorization") String authHeader
+    ){
+        UUID empId = jwtUtil.extractEmployeeId(authHeader);
+        return service.getMyLeaves(empId);
     }
 }

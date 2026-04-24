@@ -31,6 +31,9 @@ public interface LeaveRequestRepo extends JpaRepository<LeaveRequest, UUID> {
 
     List<LeaveRequest> findByStatus(LeaveStatus status);
 
+
+    List<LeaveRequest> findByEmployeeIdOrderByStartDateDesc(UUID empId);
+
     @Query("""
     SELECT l FROM LeaveRequest l
     WHERE l.status = 'APPROVED'
