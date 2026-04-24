@@ -195,4 +195,47 @@ public class EmployeeService {
 
         return res;
     }
+
+    public EmployeeResponseDTO getMyProfile(UUID empId) {
+        Employee employee=repo.findByEmployeeIdAndDeletedFalse(empId)
+                .orElseThrow(()->new RuntimeException("employee not found "));
+
+        return mapToResponse(employee);
+    }
+
+    public EmployeeResponseDTO updateMyProfile(UUID empId, EmployeeRequestDTO request) {
+        Employee emp=repo.findByEmployeeIdAndDeletedFalse(empId)
+                .orElseThrow(()->new RuntimeException("employee not found "));
+
+        // ======================
+        // ALLOWED FIELDS ONLY
+        // ======================
+
+        if (request.getMobileNumber()!=null){
+            emp.setMobileNumber(request.getMobileNumber());
+        }
+
+        if (request.getAlternatePhoneNumber() != null) {
+            emp.setAlternatePhoneNumber(request.getAlternatePhoneNumber());
+        }
+
+        if (request.getCurrentAddress() != null) {
+            emp.setCurrentAddress(request.getCurrentAddress());
+        }
+
+        if (request.getPermanentAddress() != null) {
+            emp.setPermanentAddress(request.getPermanentAddress());
+        }
+
+        if (request.getEmergencyContactName() != null) {
+            emp.setEmergencyContactName(request.getEmergencyContactName());
+        }
+
+        if (request.getEmergencyContactNumber() != null) {
+            emp.setEmergencyContactNumber(request.getEmergencyContactNumber());
+        }
+
+        repo.save(emp);
+        return mapToResponse(emp);
+    }
 }

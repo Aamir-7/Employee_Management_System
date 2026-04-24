@@ -75,4 +75,19 @@ public class EmployeeController {
         service.deleteById(employeeId);
         return "Deleted Successfully";
     }
+
+    @GetMapping("/me")
+    public EmployeeResponseDTO getMyProfile(@RequestHeader("Authorization") String authHeader){
+        UUID empId=jwtUtil.extractEmployeeId(authHeader);
+        return service.getMyProfile(empId);
+    }
+
+    @PatchMapping("/me")
+    public EmployeeResponseDTO updateMyProfile(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody EmployeeRequestDTO employeeRequestDTO
+            ){
+        UUID empId=jwtUtil.extractEmployeeId(authHeader);
+        return service.updateMyProfile(empId,employeeRequestDTO);
+    }
 }

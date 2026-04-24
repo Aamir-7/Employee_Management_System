@@ -1,5 +1,6 @@
 package com.employee.management.service;
 
+import com.employee.management.dto.AttendanceResponseDTO;
 import com.employee.management.entity.Attendance;
 import com.employee.management.enums.AttendanceEnum;
 import com.employee.management.repository.AttendanceRepo;
@@ -10,6 +11,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -142,4 +144,21 @@ public class AttendanceService {
                 date.getDayOfWeek()== DayOfWeek.SUNDAY ;
     }
 
+    public List<AttendanceResponseDTO> getMyAttendance(UUID empId) {
+        List<Attendance>list=attendanceRepo.findByEmployeeIdOrderByDateDesc(empId);
+        return list.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    public AttendanceResponseDTO mapToDTO(Attendance attendance){
+        AttendanceResponseDTO dto=new AttendanceResponseDTO();
+        dto.setDate(attendance.getDate());
+        dto.setInTime(attendance.getInTime());
+        dto.setOutTime(attendance.getOutTime());
+        dto.setBreakHour(attendance.getBreakHour());
+        dto.setAttendanceEnum(attendance.getAttendance());
+
+        return dto;
+    }
 }

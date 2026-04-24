@@ -27,5 +27,7 @@ public interface AttendanceRepo extends JpaRepository<Attendance, UUID> {
             UUID employeeId,
             AttendanceEnum attendance
     );
+
+    List<Attendance>findByEmployeeIdOrderByDateDesc(UUID employeeId);
 }
 

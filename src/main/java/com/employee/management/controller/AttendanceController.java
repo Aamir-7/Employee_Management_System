@@ -1,10 +1,13 @@
 package com.employee.management.controller;
 
+import com.employee.management.dto.AttendanceResponseDTO;
+import com.employee.management.entity.Attendance;
 import com.employee.management.service.AttendanceService;
 import com.employee.management.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -37,5 +40,14 @@ public class AttendanceController {
         UUID employeeId=UUID.fromString(claims.getSubject());
 
         return service.markOut(employeeId);
+    }
+
+    @GetMapping("/my")
+    public List<AttendanceResponseDTO>getMyAttendance(
+            @RequestHeader("Authorization") String authHeader
+    ){
+        UUID empId=jwtUtil.extractEmployeeId(authHeader);
+        return service.getMyAttendance(empId);
+
     }
 }
